@@ -1,0 +1,10 @@
+{
+  "extends": "@CQRS-variations-test/tsconfig/nestjs.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "preserveWatchOutput": true
+  },
+  "exclude": [
+    "node_modules", "dist"
+  ]
+}
