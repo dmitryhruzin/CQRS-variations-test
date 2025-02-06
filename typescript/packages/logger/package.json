@@ -1,0 +1,33 @@
+{
+  "name": "@CQRS-variations-test/logger",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Nest JS logger module for project",
+  "type": "module",
+  "exports": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "npx tsc --build tsconfig.json",
+    "lint": "npx eslint . --ext ts,tsx --max-warnings 0 --fix",
+    "clean": "npx rimraf .turbo node_modules dist bin coverage *.tsbuildinfo || exit 0",
+    "test": "npx jest --coverage --verbose",
+    "watch": "npx tsc -w --preserveWatchOutput",
+    "check-types": "npx tsc -p ./tsconfig.json --pretty --noEmit"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.0.1",
+    "capture-console": "^1.0.2",
+    "nestjs-pino": "4.1.0",
+    "pino": "9.3.2",
+    "pino-http": "10.2.0"
+  },
+  "devDependencies": {
+    "@CQRS-variations-test/eslint-config": "*",
+    "@CQRS-variations-test/jest-config": "*",
+    "@CQRS-variations-test/tsconfig": "*",
+    "@types/capture-console": "^1"
+  }
+}
