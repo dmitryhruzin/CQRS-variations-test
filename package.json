@@ -1,0 +1,62 @@
+{
+  "name": "@CQRS-variations-test/platform",
+  "private": true,
+  "workspaces": {
+    "packages": [
+      "typescript/packages/*"
+    ]
+  },
+  "scripts": {
+    "build": "dotenv -- npx turbo run build --filter @CQRS-variations-test/${target:-\"*\"}",
+    "clean:all": "npx turbo run clean && npm run clean:modules",
+    "clean:modules": "npx rimraf node_modules .yarn .turbo .idea",
+    "dev": "dotenv -- npx turbo run dev --concurrency=99 --filter @CQRS-variations-test/${target:-\"*\"}",
+    "start": "dotenv -- npx turbo run start --concurrency=99 --filter @CQRS-variations-test/${target:-\"*\"}",
+    "lint": "yarn prettier && npx turbo run lint --filter @CQRS-variations-test/${target:-\"*\"}",
+    "prettier": "npx prettier --write \"typescript/packages/**/*.{ts,tsx}\" \"typescript/apps/**/*.{ts,tsx}\" \"infra/**/*.{ts,tsx}\"",
+    "sort-packages": "npm i -g sort-package-json && sort-package-json && find packages/* apps/* -name package.json -maxdepth 2 -execdir npx sort-package-json \\; -execdir rm -rf node_modules \\;",
+    "test": "dotenv -- npx turbo run test --filter @CQRS-variations-test/${target:-\"*\"}",
+    "update-packages": "npm i -g npm-check-updates && ncu -u && find packages/* apps/* -name package.json -maxdepth 2 -execdir npx ncu -u \\; -execdir rm -rf node_modules \\;",
+    "test:cov": "dotenv -- npx turbo run test:cov --concurrency=99 --filter @CQRS-variations-test/${target:-\"*\"}",
+    "prepare": "husky",
+    "check-types": "npx turbo run check-types"
+  },
+  "devDependencies": {
+    "@CQRS-variations-test/eslint-config": "*",
+    "@CQRS-variations-test/tsconfig": "*",
+    "@typescript-eslint/eslint-plugin": "7.18.0",
+    "@typescript-eslint/parser": "7.18.0",
+    "dotenv": "16.4.5",
+    "dotenv-cli": "7.4.2",
+    "eslint": "8.57.0",
+    "eslint-config-airbnb-base": "15.0.0",
+    "eslint-config-airbnb-typescript": "18.0.0",
+    "eslint-config-next": "14.2.5",
+    "eslint-config-prettier": "9.1.0",
+    "eslint-config-turbo": "2.0.6",
+    "eslint-import-resolver-typescript": "3.6.1",
+    "eslint-plugin-cypress": "3.5.0",
+    "eslint-plugin-import": "2.29.1",
+    "eslint-plugin-jest": "28.8.0",
+    "eslint-plugin-prettier": "5.2.1",
+    "eslint-plugin-react": "7.35.0",
+    "eslint-plugin-react-hooks": "4.6.2",
+    "eslint-plugin-react-native": "4.1.0",
+    "eslint-plugin-turbo": "2.0.6",
+    "husky": "9.1.4",
+    "lint-staged": "15.2.9",
+    "prettier": "3.3.3",
+    "rimraf": "5.0.10",
+    "ts-loader": "9.5.1",
+    "ts-node": "10.9.2",
+    "tslib": "2.6.3",
+    "turbo": "2.3.3",
+    "typescript": "5.5.4"
+  },
+  "packageManager": "yarn@4.2.2",
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix"
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+    "name": "@CQRS-variations-test/eslint-config",
+    "version": "0.0.0",
+    "private": true,
+    "license": "MIT",
+    "files": [
+        "react.js",
+        "react-native.js",
+        "node.js"
+    ],
+    "devDependencies": {
+        "eslint-config-turbo": "2.0.6"
+    },
+    "publishConfig": {
+        "access": "public"
+    }
+}
