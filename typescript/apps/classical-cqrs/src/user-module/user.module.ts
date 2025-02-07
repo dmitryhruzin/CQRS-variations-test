@@ -8,6 +8,7 @@ import { UserCreatedEventHandler } from './eventHandlers/index.js'
 import { UserRepository } from './user.repository.js'
 import { UserMainRepository } from './projections/user-main.repository.js'
 import { EventStoreModule } from '../event-store-module/event-store.module.js'
+import { AggregateModule } from '../aggregate-module/aggregate.module.js'
 import { GetUserByIdMainQueryHandler, GetUsersMainQueryHandler } from './queryHandlers/index.js'
 
 export const commandHandlers = [CreateUserCommandHandler]
@@ -20,7 +21,7 @@ export const userEventHandlers = [UserCreatedEventHandler]
  * @class UserModule
  */
 @Module({
-  imports: [ConfigModule, LoggerModule, CqrsModule, EventStoreModule],
+  imports: [ConfigModule, LoggerModule, CqrsModule, EventStoreModule, AggregateModule],
   controllers: [UserController],
   providers: [...commandHandlers, ...queryHandlers, ...userEventHandlers, UserRepository, UserMainRepository]
 })

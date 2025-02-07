@@ -1,6 +1,6 @@
-import { AggregateRoot } from '@nestjs/cqrs'
 import { v4 } from 'uuid'
 import { User, UserWithOptionalId } from '../types/user.js'
+import { Aggregate } from '../aggregate-module/aggregate.js'
 import { UserCreatedV1 } from './events/index.js'
 
 /**
@@ -9,9 +9,7 @@ import { UserCreatedV1 } from './events/index.js'
  * @class UserAggregate
  * @extends {AggregateRoot}
  */
-export class UserAggregate extends AggregateRoot {
-  private id: string
-
+export class UserAggregate extends Aggregate {
   private name: string
 
   /**
@@ -31,6 +29,9 @@ export class UserAggregate extends AggregateRoot {
       name: this.name
     })
     this.apply(event)
+
+    this.version += 1
+
     return [event]
   }
 

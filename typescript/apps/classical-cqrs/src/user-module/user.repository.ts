@@ -3,6 +3,7 @@ import { Event } from '../types/common.js'
 import { UserAggregate } from './user.aggregate.js'
 import { User } from '../types/user.js'
 import { EventStoreRepository } from '../event-store-module/event-store.repository.js'
+import { AggregateSnapshotRepository } from '../aggregate-module/aggregate-snapshot.repository.js'
 
 /**
  * Repository for managing user aggregates.
@@ -14,7 +15,10 @@ export class UserRepository {
   private cache: { [key: string]: UserAggregate } = {}
 
   // @ts-ignore
-  constructor(private readonly eventStore: EventStoreRepository) {}
+  constructor(
+    private readonly eventStore: EventStoreRepository,
+    private readonly snapshotRepository: AggregateSnapshotRepository
+  ) {}
 
   /**
    * Builds a user aggregate by ID.
@@ -55,6 +59,10 @@ export class UserRepository {
     const aggregateId = aggregate.toJson().id
 
     await this.eventStore.saveEvents(aggregateId, events)
+
+    if (aggregate.version % 5 === 0) {
+      this.snapshotRepository.saveSnapshot(aggregate)
+    }
 
     this.cache.aggregateId = aggregate
 
