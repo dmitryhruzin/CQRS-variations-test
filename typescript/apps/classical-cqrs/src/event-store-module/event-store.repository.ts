@@ -35,8 +35,9 @@ export class EventStoreRepository {
       await this.knexConnection.schema.createTable(this.tableName, (table) => {
         table.increments('id').primary()
         table.string('aggregateId')
-        table.string('eventName')
-        table.jsonb('eventBody')
+        table.string('name')
+        table.integer('version')
+        table.jsonb('body')
       })
     }
   }
@@ -71,8 +72,9 @@ export class EventStoreRepository {
     const result = await this.knexConnection.table(this.tableName).insert(
       events.map((e) => ({
         aggregateId,
-        eventName: e.constructor.name,
-        eventBody: e.toJson()
+        name: e.constructor.name,
+        version: e.version,
+        body: e.toJson()
       }))
     )
     this.logger.info({ message: 'saveEvents result:', body: result })

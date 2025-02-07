@@ -19,18 +19,21 @@ export type Event = {
   constructor: {
     name: string
   }
+  version: number
   toJson(): { [key: string]: unknown }
 }
 
 /**
  * Type representing a stored event.
  * @typedef {Object} StoredEvent
- * @property {string} eventName - The name of the event.
- * @property {{ [key: string]: unknown }} eventBody - The body of the event.
+ * @property {string} name - The name of the event.
+ * @property {number} version - The version of the event.
+ * @property {{ [key: string]: unknown }} body - The body of the event.
  *
  * Represents an event that has been stored in the event store.
  */
 export type StoredEvent = {
-  eventName: string
-  eventBody: { [key: string]: unknown }
+  name: string
+  version: number
+  body: { [key: string]: unknown }
 }

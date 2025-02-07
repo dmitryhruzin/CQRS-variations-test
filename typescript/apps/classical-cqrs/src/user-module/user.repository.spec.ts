@@ -14,7 +14,7 @@ describe('UserRepository', () => {
       eventStore = new EventStoreRepository({} as knex.Knex, {} as Logger)
       eventStore.getEventsByAggregateId = jest
         .fn()
-        .mockImplementation(() => [{ eventName: 'UserCreated', eventBody: { name: 'John Doe' } }]) as jest.Mocked<
+        .mockImplementation(() => [{ name: 'UserCreatedV1', body: { name: 'John Doe' } }]) as jest.Mocked<
         typeof eventStore.getEventsByAggregateId
       >
       repository = new UserRepository(eventStore)

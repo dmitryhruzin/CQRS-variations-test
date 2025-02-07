@@ -4,16 +4,18 @@ import { User } from '../../types/user.js'
 /**
  * Event representing the creation of a user.
  *
- * @class UserCreated
+ * @class UserCreatedV1
  * @implements {Event}
  */
-export class UserCreated implements Event {
+export class UserCreatedV1 implements Event {
   private id: string
 
   private name: string
 
+  public version: number = 1
+
   /**
-   * Creates an instance of UserCreated.
+   * Creates an instance of UserCreatedV1.
    *
    * @param {User} payload - The user data.
    *

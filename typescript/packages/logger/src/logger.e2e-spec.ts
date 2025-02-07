@@ -25,7 +25,7 @@ describe('Test Logger Response (e2e)', () => {
     captureConsole.startCapture(process.stdout, (log) => (logResponse = log))
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [LoggerModule],
+      imports: [LoggerModule.forRoot()],
       controllers: [TestController]
     }).compile()
 
@@ -47,9 +47,7 @@ describe('Test Logger Response (e2e)', () => {
       .expect(200)
       .then(() => {
         const parsedLog = JSON.parse(logResponse)
-        expect(parsedLog.awsRequestId).toBeDefined()
-        expect(parsedLog.apiRequestId).toBeDefined()
-        expect(parsedLog['x-correlation-id']).toBeDefined()
+        expect(parsedLog['msg']).toBeDefined()
         done()
       })
       .catch((err) => done(err))

@@ -2,7 +2,7 @@ import { jest } from '@jest/globals'
 import { UserCreatedEventHandler } from './UserCreatedEventHandler.js'
 import { UserMainRepository } from '../projections/user-main.repository.js'
 import knex from 'knex'
-import { UserCreated } from '../events/index.js'
+import { UserCreatedV1 } from '../events/index.js'
 
 describe('UserCreatedEventHandler', () => {
   describe('handle', () => {
@@ -18,7 +18,7 @@ describe('UserCreatedEventHandler', () => {
     const testCases = [
       {
         description: 'should call repository with specific event',
-        payload: new UserCreated({ id: '1', name: 'John Doe' }),
+        payload: new UserCreatedV1({ id: '1', name: 'John Doe' }),
         expected: { id: '1', name: 'John Doe' }
       }
     ]

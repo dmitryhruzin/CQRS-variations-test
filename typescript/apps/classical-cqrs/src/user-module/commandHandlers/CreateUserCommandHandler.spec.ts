@@ -6,11 +6,11 @@ import { EventStoreRepository } from '../../event-store-module/event-store.repos
 import { EventBus } from '@nestjs/cqrs/dist/event-bus.js'
 import { CreateUserCommand } from '../commands/index.js'
 import { UserWithOptionalId } from '../../types/user.js'
-import { UserCreated } from '../events/index.js'
+import { UserCreatedV1 } from '../events/index.js'
 
 describe('CreateUserCommandHandler', () => {
   describe('execute', () => {
-    const events = [new UserCreated({ id: '1', name: 'John Doe' })]
+    const events = [new UserCreatedV1({ id: '1', name: 'John Doe' })]
 
     let repository: UserRepository
     let aggregate: { create: (user: UserWithOptionalId) => Event[]; commit: () => {} }

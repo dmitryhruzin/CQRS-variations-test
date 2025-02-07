@@ -33,8 +33,8 @@ export class UserRepository {
 
     const events = await this.eventStore.getEventsByAggregateId(id)
     const aggregate: UserAggregate = events.reduce((agg: UserAggregate, event) => {
-      if (event.eventName === 'UserCreated') {
-        agg.create({ ...event.eventBody, id } as User)
+      if (event.name === 'UserCreatedV1') {
+        agg.create({ ...event.body, id } as User)
       }
       return agg
     }, new UserAggregate())

@@ -1,7 +1,7 @@
 import { AggregateRoot } from '@nestjs/cqrs'
 import { v4 } from 'uuid'
 import { User, UserWithOptionalId } from '../types/user.js'
-import { UserCreated } from './events/index.js'
+import { UserCreatedV1 } from './events/index.js'
 
 /**
  * Aggregate root for managing user state and events.
@@ -18,15 +18,15 @@ export class UserAggregate extends AggregateRoot {
    * Creates a new user aggregate.
    *
    * @param {UserWithOptionalId} user - The user data.
-   * @returns {UserCreated[]} Array of events applied.
+   * @returns {UserCreatedV1[]} Array of events applied.
    *
-   * This method initializes a new user aggregate and applies the UserCreated event.
+   * This method initializes a new user aggregate and applies the UserCreatedV1 event.
    */
   create(user: UserWithOptionalId) {
     this.id = user.id ?? v4()
     this.name = user.name
 
-    const event = new UserCreated({
+    const event = new UserCreatedV1({
       id: this.id,
       name: this.name
     })
