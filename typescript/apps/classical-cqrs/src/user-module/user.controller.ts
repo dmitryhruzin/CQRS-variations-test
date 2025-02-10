@@ -1,8 +1,8 @@
 import { Controller, HttpCode, Post, Get, Body, Param } from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { AcknowledgementResponse } from '../types/common.js'
-import { CreateUserRequest, UserMain } from '../types/user.js'
-import { CreateUserCommand } from './commands/index.js'
+import { CreateUserRequest, UpdateUserNameRequest, UserMain } from '../types/user.js'
+import { CreateUserCommand, UpdateUserNameCommand } from './commands/index.js'
 import { GetUsersMain, GetUserByIdMain } from './queries/index.js'
 
 /**
@@ -31,6 +31,17 @@ export class UserController {
     }
 
     const command = new CreateUserCommand(payload)
+    return this.commandBus.execute(command)
+  }
+
+  @Post('/update-user-name')
+  @HttpCode(200)
+  async updateUserName(@Body() payload: UpdateUserNameRequest): Promise<AcknowledgementResponse> {
+    if (!payload.name || payload.name.trim() === '') {
+      throw new Error('Name must be a non-empty string')
+    }
+
+    const command = new UpdateUserNameCommand(payload)
     return this.commandBus.execute(command)
   }
 

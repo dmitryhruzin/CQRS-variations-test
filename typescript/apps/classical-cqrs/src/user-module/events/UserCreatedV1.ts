@@ -1,5 +1,5 @@
-import { Event } from '../../types/common.js'
-import { User } from '../../types/user.js'
+import { UserCreatedV1EventPayload } from '../../types/user.js'
+import { UserCreated } from './UserCreated.js'
 
 /**
  * Event representing the creation of a user.
@@ -7,21 +7,16 @@ import { User } from '../../types/user.js'
  * @class UserCreatedV1
  * @implements {Event}
  */
-export class UserCreatedV1 implements Event {
-  private id: string
+export class UserCreatedV1 extends UserCreated {
+  public id: string
 
-  private name: string
+  public name: string
 
   public version: number = 1
 
-  /**
-   * Creates an instance of UserCreatedV1.
-   *
-   * @param {User} payload - The user data.
-   *
-   * This constructor initializes the event with the user data.
-   */
-  constructor(payload: User) {
+  constructor(payload: UserCreatedV1EventPayload) {
+    super(payload)
+
     this.id = payload.id
     this.name = payload.name
   }

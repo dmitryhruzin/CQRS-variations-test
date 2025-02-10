@@ -1,3 +1,5 @@
+import { EventBasePayload } from './common.js'
+
 /**
  * Type representing a user.
  * @typedef {Object} User
@@ -9,6 +11,10 @@
 export type User = {
   id: string
   name: string
+}
+
+export type UserUpdatePayload = {
+  name?: string
 }
 
 /**
@@ -34,6 +40,13 @@ export type UserMain = {
  */
 export type UserWithOptionalId = Omit<User, 'id'> & { id?: string }
 
+export type UserCreatedV1EventPayload = EventBasePayload & User
+
+export type UserNameUpdatedV1EventPayload = EventBasePayload & {
+  previousName: string
+  name: string
+}
+
 /**
  * Type representing a create user request.
  * @typedef {Object} CreateUserRequest
@@ -42,5 +55,10 @@ export type UserWithOptionalId = Omit<User, 'id'> & { id?: string }
  * Represents the data required to create a new user.
  */
 export type CreateUserRequest = {
+  name: string
+}
+
+export type UpdateUserNameRequest = {
+  id: string
   name: string
 }
