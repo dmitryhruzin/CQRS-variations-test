@@ -46,3 +46,10 @@ export type StoredEvent = {
   aggregateVersion: number
   body: { [key: string]: unknown }
 }
+
+export type Snapshot<T> = null | {
+  id: number
+  aggregateId: string
+  aggregateVersion: number
+  state: T
+}

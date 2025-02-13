@@ -3,6 +3,7 @@ import { User } from '../types/user.js'
 import { Aggregate } from '../aggregate-module/aggregate.js'
 import { UserCreatedV1, UserNameUpdatedV1 } from './events/index.js'
 import { CreateUserCommand, UpdateUserNameCommand } from './commands/index.js'
+import { Snapshot } from '../types/common.js'
 
 /**
  * Aggregate root for managing user state and events.
@@ -12,6 +13,18 @@ import { CreateUserCommand, UpdateUserNameCommand } from './commands/index.js'
  */
 export class UserAggregate extends Aggregate {
   private name: string
+
+  constructor(snapshot: Snapshot<UserAggregate> = null) {
+    if (!snapshot) {
+      super()
+    } else {
+      super(snapshot.aggregateId, snapshot.aggregateVersion)
+
+      if (snapshot.state) {
+        this.name = snapshot.state.name
+      }
+    }
+  }
 
   /**
    * Creates a new user aggregate.

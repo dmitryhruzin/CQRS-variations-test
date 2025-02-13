@@ -51,8 +51,11 @@ export class EventStoreRepository {
    *
    * This method queries the event store to retrieve all events associated with a specific aggregate ID.
    */
-  async getEventsByAggregateId(id: string): Promise<StoredEvent[]> {
-    const records = await this.knexConnection.table(this.tableName).where({ aggregateId: id })
+  async getEventsByAggregateId(id: string, aggregateVersion = 0): Promise<StoredEvent[]> {
+    const records = await this.knexConnection
+      .table(this.tableName)
+      .where({ aggregateId: id })
+      .andWhere('aggregateVersion', '>', aggregateVersion)
     return records.map((r) => ({
       ...r,
       body: JSON.parse(r.body)

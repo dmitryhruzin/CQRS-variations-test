@@ -36,7 +36,9 @@ export class UserRepository {
       return this.cache[id]
     }
 
-    const events = await this.eventStore.getEventsByAggregateId(id)
+    const snapshot = await this.snapshotRepository.getLatestSnapshotByAggregateId<UserAggregate>(id)
+
+    const events = await this.eventStore.getEventsByAggregateId(id, snapshot?.aggregateVersion || 0)
 
     const aggregate: UserAggregate = events.reduce((agg: UserAggregate, event) => {
       const eventPayload = {
@@ -60,7 +62,7 @@ export class UserRepository {
         throw new Error(`User aggregate replay. Unprocesible event ${event.name}`)
       }
       return agg
-    }, new UserAggregate())
+    }, new UserAggregate(snapshot))
 
     this.cache[id] = aggregate
 

@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common'
 import { InjectConnection } from 'nest-knexjs'
 import { InjectLogger, Logger } from '@CQRS-variations-test/logger'
 import { Aggregate } from '../aggregate-module/aggregate.js'
-import { StoredEvent } from '../types/common.js'
+import { Snapshot } from '../types/common.js'
 
 @Injectable()
 export class AggregateSnapshotRepository {
@@ -25,8 +25,13 @@ export class AggregateSnapshotRepository {
     }
   }
 
-  async getLatestSnapshotByAggregateId(id: string): Promise<StoredEvent[]> {
-    return this.knexConnection.table(this.tableName).where({ aggregateId: id }).orderBy('version', 'desc').first()
+  async getLatestSnapshotByAggregateId<T>(id: string): Promise<Snapshot<T>> {
+    const snapshot = await this.knexConnection
+      .table(this.tableName)
+      .where({ aggregateId: id })
+      .orderBy('aggregateVersion', 'desc')
+      .first()
+    return snapshot ? { ...snapshot, state: JSON.parse(snapshot.state) } : null
   }
 
   async saveSnapshot(aggregate: Aggregate): Promise<boolean> {
