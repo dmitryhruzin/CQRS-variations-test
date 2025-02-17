@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common'
 import { Event } from '../types/common.js'
 import { UserAggregate } from './user.aggregate.js'
-import { User } from '../types/user.js'
+import { UserCreatedV1, UserNameUpdatedV1 } from './events/index.js'
 import { EventStoreRepository } from '../event-store-module/event-store.repository.js'
+import { AggregateSnapshotRepository } from '../aggregate-module/aggregate-snapshot.repository.js'
+import { UserCreatedV1EventPayload, UserNameUpdatedV1EventPayload } from '../types/user.js'
 
 /**
  * Repository for managing user aggregates.
@@ -14,7 +16,10 @@ export class UserRepository {
   private cache: { [key: string]: UserAggregate } = {}
 
   // @ts-ignore
-  constructor(private readonly eventStore: EventStoreRepository) {}
+  constructor(
+    private readonly eventStore: EventStoreRepository,
+    private readonly snapshotRepository: AggregateSnapshotRepository
+  ) {}
 
   /**
    * Builds a user aggregate by ID.
@@ -31,13 +36,33 @@ export class UserRepository {
       return this.cache[id]
     }
 
-    const events = await this.eventStore.getEventsByAggregateId(id)
+    const snapshot = await this.snapshotRepository.getLatestSnapshotByAggregateId<UserAggregate>(id)
+
+    const events = await this.eventStore.getEventsByAggregateId(id, snapshot?.aggregateVersion || 0)
+
     const aggregate: UserAggregate = events.reduce((agg: UserAggregate, event) => {
-      if (event.name === 'UserCreatedV1') {
-        agg.create({ ...event.body, id } as User)
+      const eventPayload = {
+        ...event.body,
+        aggregateId: id,
+        aggregateVersion: event.aggregateVersion
+      }
+      if (event.name === 'UserCreated') {
+        if (event.version === 1) {
+          agg.replayUserCreatedV1(new UserCreatedV1(eventPayload as UserCreatedV1EventPayload))
+        } else {
+          throw new Error(`UserCreated replay. Unprocesible event version ${event.version}`)
+        }
+      } else if (event.name === 'UserNameUpdated') {
+        if (event.version === 1) {
+          agg.replayUserNameUpdatedV1(new UserNameUpdatedV1(eventPayload as UserNameUpdatedV1EventPayload))
+        } else {
+          throw new Error(`UserNameUpdated replay. Unprocesible event version ${event.version}`)
+        }
+      } else {
+        throw new Error(`User aggregate replay. Unprocesible event ${event.name}`)
       }
       return agg
-    }, new UserAggregate())
+    }, new UserAggregate(snapshot))
 
     this.cache[id] = aggregate
 
@@ -55,6 +80,10 @@ export class UserRepository {
     const aggregateId = aggregate.toJson().id
 
     await this.eventStore.saveEvents(aggregateId, events)
+
+    if (aggregate.version % 5 === 0) {
+      this.snapshotRepository.saveSnapshot(aggregate)
+    }
 
     this.cache.aggregateId = aggregate
 

@@ -12,7 +12,7 @@ describe('EventStoreRepository', () => {
       client: 'sqlite3',
       useNullAsDefault: true,
       connection: {
-        filename: './data.db'
+        filename: './test.db'
       }
     })
   })
@@ -24,9 +24,9 @@ describe('EventStoreRepository', () => {
 
   describe('getEventsByAggregateId', () => {
     const EVENTS_MOCK = [
-      { aggregateId: '1', name: 'UserCreatedV1', body: { name: 'John Doe' } },
-      { aggregateId: '2', name: 'UserCreatedV1', body: { name: 'John Doe' } },
-      { aggregateId: '2', name: 'UserUpdated', body: { name: 'John Smith' } }
+      { aggregateId: '1', aggregateVersion: 1, name: 'UserCreatedV1', body: { name: 'John Doe' } },
+      { aggregateId: '2', aggregateVersion: 1, name: 'UserCreatedV1', body: { name: 'John Doe' } },
+      { aggregateId: '2', aggregateVersion: 2, name: 'UserUpdated', body: { name: 'John Smith' } }
     ]
 
     let repo: EventStoreRepository
@@ -34,7 +34,7 @@ describe('EventStoreRepository', () => {
     beforeAll(async () => {
       repo = new EventStoreRepository(db, logger)
       await repo.onModuleInit()
-      await db.table('events').insert(EVENTS_MOCK)
+      await db.table('events').insert(EVENTS_MOCK.map(e => ({ ...e, body: JSON.stringify(e.body) })))
     })
 
     const testCases = [
@@ -68,8 +68,8 @@ describe('EventStoreRepository', () => {
 
   describe('saveEvents', () => {
     const EVENTS_MOCK: Event[] = [
-      { constructor: { name: 'UserCreatedV1' }, version: 1, toJson: () => ({ name: 'John Doe' }) },
-      { constructor: { name: 'UserCreatedV1' }, version: 1, toJson: () => ({ name: 'John Smith' }) }
+      { aggregateId: '123', aggregateVersion: 1, version: 1, toJson: () => JSON.stringify({ name: 'John Doe' }) },
+      { aggregateId: '123', aggregateVersion: 1, version: 1, toJson: () => JSON.stringify({ name: 'John Smith' }) }
     ]
 
     let repo: EventStoreRepository
@@ -86,8 +86,8 @@ describe('EventStoreRepository', () => {
         events: EVENTS_MOCK,
         expected: true,
         saved: [
-          { aggregateId: '4', name: 'UserCreatedV1', body: { name: 'John Doe' } },
-          { aggregateId: '4', name: 'UserCreatedV1', body: { name: 'John Smith' } }
+          { aggregateId: '4', body: JSON.stringify({ name: 'John Doe' }), version: 1, aggregateVersion: 1 },
+          { aggregateId: '4', body: JSON.stringify({ name: 'John Smith' }), version: 1, aggregateVersion: 1 }
         ]
       },
       {
@@ -103,7 +103,7 @@ describe('EventStoreRepository', () => {
       expect(result).toEqual(expected)
 
       const savedData = await db.table('events').where({ aggregateId: id })
-      expect(savedData.map((r) => r.name).sort()).toEqual(saved.map((e) => e.name).sort())
+      expect(savedData.sort()).toMatchObject(saved.sort())
     })
   })
 })

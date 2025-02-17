@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals'
 import { UserAggregate } from './user.aggregate.js'
+import { CreateUserCommand } from './commands/CreateUserCommand.js'
 
 describe('UserAggregate', () => {
   describe('toJson', () => {
@@ -8,10 +9,10 @@ describe('UserAggregate', () => {
         description: 'should return a js Object',
         getAggregate: () => {
           const aggregate = new UserAggregate()
-          aggregate.create({ id: '1', name: 'John Doe' })
+          aggregate.create(new CreateUserCommand({ name: 'John Doe' }))
           return aggregate
         },
-        expected: { id: '1', name: 'John Doe' }
+        expected: { name: 'John Doe' }
       },
       {
         description: 'should return a js Object',
@@ -22,7 +23,9 @@ describe('UserAggregate', () => {
     test.each(testCases)('$description', ({ getAggregate, expected, expectedError }) => {
       try {
         const result = getAggregate().toJson()
-        expect(result).toEqual(expected)
+        if (expected) {
+          expect(result).toMatchObject(expected)
+        }
 
         if (expectedError) {
           expect(true).toBeFalsy()
@@ -57,13 +60,10 @@ describe('UserAggregate', () => {
       }
     ]
     test.each(testCases)('$description', ({ payload, expected }) => {
-      const result = aggregate.create(payload)
+      const result = aggregate.create(new CreateUserCommand(payload))
 
       expect(aggregate.apply).toHaveBeenCalledTimes(1)
       expect(result[0].toJson().name).toEqual(expected.name)
-      if (expected.id) {
-        expect(result[0].toJson().id).toEqual(expected.id)
-      }
     })
   })
 })

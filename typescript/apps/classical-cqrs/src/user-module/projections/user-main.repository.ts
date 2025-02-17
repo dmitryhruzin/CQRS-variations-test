@@ -1,7 +1,7 @@
 import knex from 'knex'
 import { Injectable } from '@nestjs/common'
 import { InjectConnection } from 'nest-knexjs'
-import { User } from '../../types/user.js'
+import { User, UserUpdatePayload } from '../../types/user.js'
 
 /**
  * Repository for managing main user data.
@@ -35,6 +35,12 @@ export class UserMainRepository {
    */
   async save(record: User): Promise<boolean> {
     await this.knexConnection.table(this.tableName).insert([record])
+
+    return true
+  }
+
+  async update(id: string, payload: UserUpdatePayload): Promise<boolean> {
+    await this.knexConnection.table(this.tableName).update({ name: payload.name }).where({ id })
 
     return true
   }

@@ -1,41 +1,41 @@
 import { jest } from '@jest/globals'
-import { CreateUserCommandHandler } from './CreateUserCommandHandler.js'
+import { UpdateUserNameCommandHandler } from './UpdateUserNameCommandHandler.js'
 import { EventPublisher } from '@nestjs/cqrs'
 import { UserRepository } from '../user.repository.js'
 import { EventStoreRepository } from '../../event-store-module/event-store.repository.js'
 import { EventBus } from '@nestjs/cqrs/dist/event-bus.js'
-import { CreateUserCommand } from '../commands/index.js'
-import { UserWithOptionalId } from '../../types/user.js'
-import { UserCreatedV1 } from '../events/index.js'
+import { UpdateUserNameCommand } from '../commands/index.js'
+import { UserNameUpdatedV1 } from '../events/index.js'
 import { AggregateSnapshotRepository } from '../../aggregate-module/aggregate-snapshot.repository.js'
 
-describe('CreateUserCommandHandler', () => {
+describe('UpdateUserNameCommandHandler', () => {
   describe('execute', () => {
-    const events = [new UserCreatedV1({ aggregateId: '123', aggregateVersion: 1, id: '1', name: 'John Doe' })]
+    const events = [new UserNameUpdatedV1({ aggregateId: '123', aggregateVersion: 1, previousName: 'John', name: 'John Doe' })]
 
     let repository: UserRepository
-    let aggregate: { create: (user: UserWithOptionalId) => Event[]; commit: () => {} }
+    let aggregate: { updateName: (user: UpdateUserNameCommand) => Event[]; commit: () => {} }
     let publisher: EventPublisher
-    let handler: CreateUserCommandHandler
+    let handler: UpdateUserNameCommandHandler
 
     beforeEach(() => {
       repository = new UserRepository({} as EventStoreRepository, {} as AggregateSnapshotRepository)
       repository.save = jest.fn() as jest.Mocked<typeof repository.save>
+      repository.buildUserAggregate = jest.fn() as jest.Mocked<typeof repository.buildUserAggregate>
       aggregate = {
-        create: jest.fn().mockImplementation(() => events) as jest.Mocked<typeof aggregate.create>,
+        updateName: jest.fn().mockImplementation(() => events) as jest.Mocked<typeof aggregate.updateName>,
         commit: jest.fn() as jest.Mocked<typeof aggregate.commit>
       }
       publisher = new EventPublisher({} as EventBus)
       publisher.mergeObjectContext = jest.fn().mockImplementation(() => {
         return aggregate
       }) as jest.Mocked<typeof publisher.mergeObjectContext>
-      handler = new CreateUserCommandHandler(repository, publisher)
+      handler = new UpdateUserNameCommandHandler(repository, publisher)
     })
 
     const testCases = [
       {
         description: 'should update aggregate, save and commit events',
-        payload: new CreateUserCommand({ name: 'John Doe' }),
+        payload: new UpdateUserNameCommand({ id: '1234', name: 'John Doe' }),
         expected: events
       }
     ]
@@ -43,7 +43,8 @@ describe('CreateUserCommandHandler', () => {
       await handler.execute(payload)
 
       expect(repository.save).toHaveBeenCalledWith(aggregate, expected)
-      expect(aggregate.create).toHaveBeenCalledWith(payload)
+      expect(repository.buildUserAggregate).toHaveBeenCalledWith(payload.id)
+      expect(aggregate.updateName).toHaveBeenCalledWith(payload)
       expect(aggregate.commit).toHaveBeenCalledTimes(1)
     })
   })
