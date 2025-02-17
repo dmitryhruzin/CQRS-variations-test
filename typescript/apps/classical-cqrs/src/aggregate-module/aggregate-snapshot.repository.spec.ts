@@ -1,9 +1,9 @@
 import knex from 'knex'
 import { Logger } from '@CQRS-variations-test/logger'
-import { EventStoreRepository } from './aggregate-snapshot.repository.js'
-import { Event } from '../types/common.js'
+import { AggregateSnapshotRepository } from './aggregate-snapshot.repository.js'
+import { UserAggregate } from '../user-module/user.aggregate.js'
 
-describe('EventStoreRepository', () => {
+describe('AggregateSnapshotRepository', () => {
   const logger = new Logger({})
   let db: knex.Knex
 
@@ -12,98 +12,85 @@ describe('EventStoreRepository', () => {
       client: 'sqlite3',
       useNullAsDefault: true,
       connection: {
-        filename: './data.db'
+        filename: './test.db'
       }
     })
   })
 
   afterAll(async () => {
-    await db.schema.dropTable('events')
+    await db.schema.dropTable('snapshots')
     await db.destroy()
   })
 
-  describe('getEventsByAggregateId', () => {
-    const EVENTS_MOCK = [
-      { aggregateId: '1', name: 'UserCreatedV1', body: { name: 'John Doe' } },
-      { aggregateId: '2', name: 'UserCreatedV1', body: { name: 'John Doe' } },
-      { aggregateId: '2', name: 'UserUpdated', body: { name: 'John Smith' } }
+  describe('getLatestSnapshotByAggregateId', () => {
+    const AGGREGATES_MOCK = [
+      { aggregateId: '1', aggregateVersion: 1, state: { name: 'John Doe' } },
+      { aggregateId: '1', aggregateVersion: 2, state: { name: 'John Doe Updated' } },
+      { aggregateId: '2', aggregateVersion: 1, state: { name: 'John Doe' } },
     ]
 
-    let repo: EventStoreRepository
+    let repo: AggregateSnapshotRepository
 
     beforeAll(async () => {
-      repo = new EventStoreRepository(db, logger)
+      repo = new AggregateSnapshotRepository(db, logger)
       await repo.onModuleInit()
-      await db.table('events').insert(EVENTS_MOCK)
+      await db.table('snapshots').insert(AGGREGATES_MOCK.map(a => ({ ...a, state: JSON.stringify(a.state) })))
     })
 
     const testCases = [
       {
-        description: 'should return an event for the aggregate with ID = 1',
+        description: 'should return the latest snapsot for the aggregate with ID = 1',
         id: '1',
-        expected: [EVENTS_MOCK[0]]
+        expected: { ...AGGREGATES_MOCK[1], state: { name: 'John Doe Updated' } }
       },
       {
-        description: 'should return events for the aggregate with ID = 2',
+        description: 'should return the latest snatshot for the aggregate with ID = 2',
         id: '2',
-        expected: [EVENTS_MOCK[1], EVENTS_MOCK[2]]
+        expected: { ...AGGREGATES_MOCK[2], state: { name: 'John Doe' } }
       },
       {
-        description: 'should return empty array for the aggregate with ID = 3',
+        description: 'should return null value for the aggregate with ID = 3',
         id: '3',
-        expected: []
-      },
-      {
-        description: 'should return empty array for the aggregate with no ID',
-        id: '',
-        expected: []
+        expected: null
       }
     ]
     test.each(testCases)('$description', async ({ id, expected }) => {
-      const result = await repo.getEventsByAggregateId(id)
-      expect(result.length).toEqual(expected.length)
-      expect(result.map((r) => r.name).sort()).toEqual(expected.map((e) => e.name).sort())
+      const result = await repo.getLatestSnapshotByAggregateId(id)
+      
+      if (!expected) {
+        expect(result).toEqual(expected)
+      } else {
+        expect(result).toMatchObject(expected)
+      }
     })
   })
 
-  describe('saveEvents', () => {
-    const EVENTS_MOCK: Event[] = [
-      { constructor: { name: 'UserCreatedV1' }, version: 1, toJson: () => ({ name: 'John Doe' }) },
-      { constructor: { name: 'UserCreatedV1' }, version: 1, toJson: () => ({ name: 'John Smith' }) }
-    ]
+  describe('saveSnapshot', () => {
+    const mockedAggregate = new UserAggregate()
+    mockedAggregate.id = '1234'
+    mockedAggregate.version = 1
 
-    let repo: EventStoreRepository
+    let repo: AggregateSnapshotRepository
 
     beforeAll(async () => {
-      repo = new EventStoreRepository(db, logger)
+      repo = new AggregateSnapshotRepository(db, logger)
       await repo.onModuleInit()
     })
 
     const testCases = [
       {
-        description: 'should save new events',
-        id: '4',
-        events: EVENTS_MOCK,
+        description: 'should save new aggregate',
+        aggregate: mockedAggregate,
         expected: true,
-        saved: [
-          { aggregateId: '4', name: 'UserCreatedV1', body: { name: 'John Doe' } },
-          { aggregateId: '4', name: 'UserCreatedV1', body: { name: 'John Smith' } }
-        ]
-      },
-      {
-        description: 'should not save events with no ID',
-        id: '',
-        events: EVENTS_MOCK,
-        expected: false,
-        saved: []
+        saved: { aggregateId: "1234", aggregateVersion: 1, state: "{\"id\":\"1234\"}" }
       }
     ]
-    test.each(testCases)('$description', async ({ id, events, expected, saved }) => {
-      const result = await repo.saveEvents(id, events)
+    test.each(testCases)('$description', async ({ aggregate, expected, saved }) => {
+      const result = await repo.saveSnapshot(aggregate)
       expect(result).toEqual(expected)
 
-      const savedData = await db.table('events').where({ aggregateId: id })
-      expect(savedData.map((r) => r.name).sort()).toEqual(saved.map((e) => e.name).sort())
+      const savedData = await db.table('snapshots').where({ aggregateId: aggregate.id })
+      expect(savedData[0]).toMatchObject(saved)
     })
   })
 })

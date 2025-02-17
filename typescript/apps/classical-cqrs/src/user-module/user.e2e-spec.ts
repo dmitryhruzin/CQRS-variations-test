@@ -12,6 +12,7 @@ import { UserRepository } from './user.repository.js'
 import { UserMainRepository } from './projections/user-main.repository.js'
 import { commandHandlers, userEventHandlers, queryHandlers } from './user.module.js'
 import knex from 'knex'
+import { AggregateModule } from '../aggregate-module/aggregate.module.js'
 
 describe('UserController (e2e)', () => {
   const context = {
@@ -43,6 +44,7 @@ describe('UserController (e2e)', () => {
         LoggerModule.forRoot(),
         CqrsModule,
         EventStoreModule,
+        AggregateModule,
         KnexModule.forRootAsync({
           useFactory: () => ({
             config: {

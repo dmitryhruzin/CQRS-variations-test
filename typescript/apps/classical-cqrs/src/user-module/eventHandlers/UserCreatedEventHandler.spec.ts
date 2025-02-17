@@ -18,7 +18,7 @@ describe('UserCreatedEventHandler', () => {
     const testCases = [
       {
         description: 'should call repository with specific event',
-        payload: new UserCreatedV1({ id: '1', name: 'John Doe' }),
+        payload: new UserCreatedV1({ id: '1', name: 'John Doe', aggregateId: '1234', aggregateVersion: 1 }),
         expected: { id: '1', name: 'John Doe' }
       }
     ]
