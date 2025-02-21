@@ -85,7 +85,7 @@ export class UserRepository {
       this.snapshotRepository.saveSnapshot(aggregate)
     }
 
-    this.cache.aggregateId = aggregate
+    this.cache[aggregateId] = aggregate
 
     return true
   }
