@@ -1,5 +1,5 @@
 {
-  "name": "@CQRS-variations-test/classical-cqrs",
+  "name": "@CQRS-variations-test/m-cqrs",
   "version": "0.0.1",
   "description": "",
   "type": "module",
