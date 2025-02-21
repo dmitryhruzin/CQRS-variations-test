@@ -13,6 +13,13 @@ export type User = {
   name: string
 }
 
+type AggregateMetadata = {
+  id: string
+  version: number
+}
+
+export type AggregateUserData = (User & AggregateMetadata) | null
+
 export type UserUpdatePayload = {
   name?: string
 }

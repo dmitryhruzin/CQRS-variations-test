@@ -26,7 +26,7 @@ export class UserRepository {
     if (!(await this.knexConnection.schema.hasTable(this.tableName))) {
       await this.knexConnection.schema.createTable(this.tableName, (table) => {
         table.string('id').primary()
-        table.integer('aggregateVersion')
+        table.integer('version')
         table.string('name')
       })
     }
@@ -47,7 +47,8 @@ export class UserRepository {
       return this.cache[id]
     }
 
-    const aggregate = await this.knexConnection.table(this.tableName).where({ aggregateId: id }).first()
+    const userData = await this.knexConnection.table(this.tableName).where({ aggregateId: id }).first()
+    const aggregate = new UserAggregate(userData)
 
     this.cache[id] = aggregate
 
