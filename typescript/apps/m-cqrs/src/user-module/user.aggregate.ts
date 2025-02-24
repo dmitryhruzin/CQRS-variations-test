@@ -1,5 +1,5 @@
 import { v4 } from 'uuid'
-import { AggregateUserData, User } from '../types/user.js'
+import { AggregateUserData } from '../types/user.js'
 import { Aggregate } from '../aggregate-module/aggregate.js'
 import { UserCreatedV1, UserNameUpdatedV1 } from './events/index.js'
 import { CreateUserCommand, UpdateUserNameCommand } from './commands/index.js'
@@ -13,7 +13,7 @@ import { CreateUserCommand, UpdateUserNameCommand } from './commands/index.js'
 export class UserAggregate extends Aggregate {
   private name: string
 
-  constructor(data: AggregateUserData = null) {
+  constructor(data: AggregateUserData | null = null) {
     if (!data) {
       super()
     } else {
@@ -74,13 +74,14 @@ export class UserAggregate extends Aggregate {
    *
    * This method serializes the user aggregate into a JSON object.
    */
-  toJson(): User {
+  toJson(): AggregateUserData {
     if (!this.id) {
       throw new Error('Aggregate is empty')
     }
 
     return {
       id: this.id,
+      version: this.version,
       name: this.name
     }
   }

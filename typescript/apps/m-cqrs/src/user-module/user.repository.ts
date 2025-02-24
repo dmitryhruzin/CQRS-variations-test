@@ -47,7 +47,7 @@ export class UserRepository {
       return this.cache[id]
     }
 
-    const userData = await this.knexConnection.table(this.tableName).where({ aggregateId: id }).first()
+    const userData = await this.knexConnection.table(this.tableName).where({ id }).first()
     const aggregate = new UserAggregate(userData)
 
     this.cache[id] = aggregate
