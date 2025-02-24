@@ -1,6 +1,5 @@
 import { jest } from '@jest/globals'
 import { EventStoreRepository } from '../event-store-module/event-store.repository.js'
-import { AggregateSnapshotRepository } from '../aggregate-module/aggregate-snapshot.repository.js'
 import knex from 'knex'
 import { Logger } from '@CQRS-variations-test/logger'
 import { UserRepository } from './user.repository.js'
@@ -10,30 +9,22 @@ import { CreateUserCommand } from './commands/CreateUserCommand.js'
 describe('UserRepository', () => {
   describe('buildUserAggregate', () => {
     let repository: UserRepository
-    let eventStore: EventStoreRepository
-    let snapshotRepository: AggregateSnapshotRepository
+    let db: knex.Knex = {} as knex.Knex
 
     beforeEach(() => {
-      eventStore = new EventStoreRepository({} as knex.Knex, {} as Logger)
-      eventStore.getEventsByAggregateId = jest
+      db.table = jest
         .fn()
-        .mockImplementation(() => [{ name: 'UserNameUpdated', aggregateVersion: 2, version: 1, body: { name: 'John Doe' } }]) as jest.Mocked<
-        typeof eventStore.getEventsByAggregateId
+        .mockImplementation(() => ({ where: () => ({ first: () => ({ id: '1', name: 'John', version: 2 })})})) as jest.Mocked<
+        typeof db.table
       >
-      snapshotRepository = new AggregateSnapshotRepository({} as knex.Knex, {} as Logger)
-      snapshotRepository.getLatestSnapshotByAggregateId = jest
-        .fn()
-        .mockImplementation(() => ({ id: '123', aggregateVersion: 1, aggregateId: '123', state: { name: 'test' } })) as jest.Mocked<
-        typeof snapshotRepository.getLatestSnapshotByAggregateId
-      >
-      repository = new UserRepository(eventStore, snapshotRepository)
+      repository = new UserRepository({} as EventStoreRepository, db)
     })
 
     const testCases = [
       {
-        description: 'should build an aggregate using events from Event Store',
+        description: 'should build an aggregate using the latest snapshot',
         id: '1',
-        expected: '{\"id\":\"123\",\"version\":2,\"name\":\"John Doe\"}'
+        expected: '{\"id\":\"1\",\"version\":2,\"name\":\"John\"}'
       },
       {
         description: 'should return an empty aggregate is thee is no ID specified',
@@ -50,16 +41,20 @@ describe('UserRepository', () => {
       await repository.buildUserAggregate('2')
       await repository.buildUserAggregate('2')
 
-      expect(eventStore.getEventsByAggregateId).toHaveBeenCalledTimes(1)
+      expect(db.table).toHaveBeenCalledTimes(1)
     })
   })
 
   describe('save', () => {
     const eventStore = new EventStoreRepository({} as knex.Knex, {} as Logger)
     eventStore.saveEvents = jest.fn() as jest.Mocked<typeof eventStore.saveEvents>
-    const snapshotRepository = new AggregateSnapshotRepository({} as knex.Knex, {} as Logger)
-    snapshotRepository.saveSnapshot = jest.fn() as jest.Mocked<typeof snapshotRepository.saveSnapshot>
-    const repository = new UserRepository(eventStore, snapshotRepository)
+    const db: knex.Knex = {} as knex.Knex
+    db.table = jest
+      .fn()
+      .mockImplementation(() => ({ insert: () => ({ onConflict: () => ({ merge: () => {}}) }) })) as jest.Mocked<
+      typeof db.table
+    >
+    const repository = new UserRepository(eventStore, db)
 
     const testCases = [
       {
