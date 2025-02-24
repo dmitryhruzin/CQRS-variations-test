@@ -63,7 +63,7 @@ describe('UserRepository', () => {
 
     const testCases = [
       {
-        description: 'should build an aggregate using events from Event Store',
+        description: 'should save events to the Event Sotre',
         getAggregate: () => {
           const aggregate = new UserAggregate()
           aggregate.create(new CreateUserCommand({ name: 'John Doe' }))

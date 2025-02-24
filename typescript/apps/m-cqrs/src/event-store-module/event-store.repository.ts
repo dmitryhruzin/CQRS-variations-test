@@ -2,7 +2,7 @@ import knex from 'knex'
 import { Injectable } from '@nestjs/common'
 import { InjectConnection } from 'nest-knexjs'
 import { InjectLogger, Logger } from '@CQRS-variations-test/logger'
-import { Event, StoredEvent } from '../types/common.js'
+import { Event } from '../types/common.js'
 
 /**
  * Repository for managing event store operations.
