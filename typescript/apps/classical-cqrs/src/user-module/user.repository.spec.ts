@@ -50,7 +50,7 @@ describe('UserRepository', () => {
       await repository.buildUserAggregate('2')
       await repository.buildUserAggregate('2')
 
-      expect(eventStore.getEventsByAggregateId).toHaveBeenCalledTimes(1)
+      expect(snapshotRepository.getLatestSnapshotByAggregateId).toHaveBeenCalledTimes(1)
     })
   })
 

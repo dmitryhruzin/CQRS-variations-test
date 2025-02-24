@@ -36,15 +36,12 @@ export class UserAggregate extends Aggregate {
    */
   create(user: CreateUserCommand) {
     this.id = v4()
-    this.name = user.name
-
-    this.version += 1
 
     const event = new UserCreatedV1({
       id: this.id,
-      name: this.name,
+      name: user.name,
       aggregateId: this.id,
-      aggregateVersion: this.version
+      aggregateVersion: this.version + 1
     })
 
     this.apply(event)
@@ -60,16 +57,12 @@ export class UserAggregate extends Aggregate {
   }
 
   updateName(command: UpdateUserNameCommand) {
-    this.version += 1
-
     const event = new UserNameUpdatedV1({
       previousName: this.name,
       name: command.name,
       aggregateId: this.id,
-      aggregateVersion: this.version
+      aggregateVersion: this.version + 1
     })
-
-    this.name = command.name
 
     this.apply(event)
 
