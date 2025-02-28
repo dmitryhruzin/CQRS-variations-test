@@ -1,0 +1,66 @@
+name: 'Deploy Server-API Steps'
+description: 'Execute common steps necessary for deploying a Strapi application'
+
+inputs:
+  ref:
+    description: Ref for checkout. Use the github.ref
+    required: true
+  aws_credentials:
+    description: Credentials for the AWS. Should be the github secret AWS_CREDENTIALS
+    required: true
+  aws_config:
+    description: Config for the AWS. Should be the github secret AWS_CONFIG
+    required: true
+  deployment_bucket:
+    description: AWS Deployment bucket
+    required: true
+  stage:
+    description: Deploy Stage
+    required: true
+  app_name:
+    description: App Name to deploy to
+    required: false
+  beanstalk_app_name:
+    description: ElasticBeanstalk App Name to deploy to
+    required: false
+  beanstalk_environment_name:
+    description: ElasticBeanstalk Environment Name to deploy to
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Use Setup Yarn action
+      uses: ./.github/actions/setup-yarn
+
+    - name: Set up NodeJs
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: '.tool-versions'
+        cache: 'yarn'
+
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ inputs.ref }}
+
+    - name: Cache node_modules
+      uses: actions/cache@v3
+      with:
+        path: node_modules
+        key: v1-node_modules-${{ hashFiles('yarn.lock') }}
+
+    - name: Install AWS CLI
+      uses: unfor19/install-aws-cli-action@master
+
+    - name: Configure AWS Credentials
+      run: |
+        mkdir -p ~/.aws/
+        echo "${{ inputs.aws_credentials }}" > ~/.aws/credentials
+        echo "${{ inputs.aws_config }}" > ~/.aws/config
+      shell: bash
+
+    - name: Run Strapi Deploy SH Script
+      run: |
+        APP=${{ inputs.app_name }} BEANSTALK_ENVIRONMENT=${{ inputs.beanstalk_environment_name }} BEANSTALK_APP=${{ inputs.beanstalk_app_name }} STAGE=${{ inputs.stage }} BUCKET=${{ inputs.deployment_bucket }} RUN_ID=${{ github.run_id }} bash scripts/deploy.server-api-beanstalk.sh
+      shell: bash

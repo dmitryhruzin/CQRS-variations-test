@@ -1,0 +1,68 @@
+name: Manual Deploy Server-API
+
+run-name: Deploy ${{ github.head_ref || github.ref }}
+
+permissions:
+  contents: write
+  packages: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment to deploy to
+        type: choice
+        required: true
+        default: development
+        options:
+          - development
+          - production
+      app_name:
+        description: App Name to deploy to
+        type: string
+        required: false
+        default: 'm-cqrs'
+      beanstalk_app_name:
+        description: ElasticBeanstalk App Name to deploy to
+        type: string
+        required: false
+        default: 'CQRS-test'
+      beanstalk_environment_name:
+        description: ElasticBeanstalk Environment Name to deploy to
+        type: string
+        required: false
+        default: 'm-cqrs'
+      ref:
+        description: The sha to deploy, otherwise builds HEAD of branch
+        type: string
+        required: false
+        default: ''
+
+jobs:
+  deploy-server-api:
+    runs-on: ubuntu-22.04
+    environment:
+      name: ${{ inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run install, build, upload to AWS
+        uses: ./.github/actions/deploy-server-api-beanstalk
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+          app_name: ${{ inputs.app_name }}
+          beanstalk_environment_name: ${{ inputs.beanstalk_environment_name }}
+          beanstalk_app_name: ${{ inputs.beanstalk_app_name }}
+          aws_credentials: ${{ secrets.AWS_CREDENTIALS }}
+          aws_config: ${{ secrets.AWS_CONFIG }}
+          deployment_bucket: "temp-m-sqrs-deployment-bucket"
+          stage: ${{ inputs.environment }}
+
+      - name: Push new versions/tags
+        uses: ./.github/actions/release-version
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+          stage: ${{ inputs.environment }}
+          app_name: ${{ inputs.app_name }}
+          
