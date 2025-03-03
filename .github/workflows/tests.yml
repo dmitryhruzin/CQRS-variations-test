@@ -1,0 +1,33 @@
+name: Tests
+
+run-name: Tests ${{ github.head_ref || github.ref }}
+
+on:
+  push:
+    branches: [ci-tests]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-22.04
+    steps:
+  
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Use Setup Yarn action
+        uses: ./.github/actions/setup-yarn
+
+      - name: Set up NodeJs
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.tool-versions'
+          cache: 'yarn'
+  
+      - name: build
+        run: |
+          yarn
+          yarn build
+          yarn test
+          
