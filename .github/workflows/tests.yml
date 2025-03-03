@@ -19,15 +19,15 @@ jobs:
       - name: Use Setup Yarn action
         uses: ./.github/actions/setup-yarn
 
-      - name: Set up NodeJs
-        uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version-file: '.tool-versions'
-          cache: 'yarn'
+          node-version: '20'
   
       - name: build
         run: |
           yarn
           yarn build
           yarn test
+        working-directory: ./
           
