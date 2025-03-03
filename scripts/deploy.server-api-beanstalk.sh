@@ -11,9 +11,9 @@ echo "Set yarn nohoist mode"
 yarn config set nmHoistingLimits workspaces
 
 echo "Install app only dependencies"
-yarn workspaces focus @dbbs/$APP
+yarn workspaces focus @CQRS-variations-test/$APP
 
-cd apps/$APP
+cd typescript/apps/$APP
 
 echo "Extract app version"
 MAJOR_MINOR_VERSION=$(jq -r '.version' package.json | cut -d. -f1-2)
