@@ -13,19 +13,21 @@ jobs:
   
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.ref }}
 
       - name: Use Setup Yarn action
         uses: ./.github/actions/setup-yarn
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Set up NodeJs
+        uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version-file: '.tool-versions'
+          cache: 'yarn'
   
       - name: build
         run: |
+          yarn -v
+          node -v
+          npm -v
           yarn
           yarn build
           yarn test
