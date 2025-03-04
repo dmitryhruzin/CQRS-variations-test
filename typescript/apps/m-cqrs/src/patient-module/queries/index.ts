@@ -1,2 +1,2 @@
-export { GetUsersMain } from './GetUsersMain.js'
-export { GetUserByIdMain } from './GetUserByIdMain.js'
+export { GetPatientsMain } from './GetPatientsMain.js'
+export { GetPatientByIdMain } from './GetPatientByIdMain.js'
