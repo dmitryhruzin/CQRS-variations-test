@@ -69,7 +69,7 @@ describe('EventStoreRepository', () => {
   describe('saveEvents', () => {
     const EVENTS_MOCK: Event[] = [
       { aggregateId: '123', aggregateVersion: 1, version: 1, toJson: () => JSON.stringify({ name: 'John Doe' }) },
-      { aggregateId: '123', aggregateVersion: 1, version: 1, toJson: () => JSON.stringify({ name: 'John Smith' }) }
+      { aggregateId: '123', aggregateVersion: 2, version: 1, toJson: () => JSON.stringify({ name: 'John Smith' }) }
     ]
 
     let repo: EventStoreRepository
@@ -87,7 +87,7 @@ describe('EventStoreRepository', () => {
         expected: true,
         saved: [
           { aggregateId: '4', body: JSON.stringify({ name: 'John Doe' }), version: 1, aggregateVersion: 1 },
-          { aggregateId: '4', body: JSON.stringify({ name: 'John Smith' }), version: 1, aggregateVersion: 1 }
+          { aggregateId: '4', body: JSON.stringify({ name: 'John Smith' }), version: 1, aggregateVersion: 2 }
         ]
       },
       {
