@@ -1,5 +1,5 @@
 import { QueryHandler, IQueryHandler } from '@nestjs/cqrs'
-import { UserMainRepository } from '../projections/user-main.repository.js'
+import { UserMainRepository } from '../projections/patient-main.repository.js'
 import { GetUsersMain } from '../queries/index.js'
 
 /**

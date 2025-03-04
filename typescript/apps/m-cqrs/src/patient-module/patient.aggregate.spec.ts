@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals'
-import { UserAggregate } from './user.aggregate.js'
+import { UserAggregate } from './patient.aggregate.js'
 import { CreateUserCommand } from './commands/CreateUserCommand.js'
 
 describe('UserAggregate', () => {

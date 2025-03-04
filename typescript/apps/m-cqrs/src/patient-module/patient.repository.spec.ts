@@ -2,8 +2,8 @@ import { jest } from '@jest/globals'
 import { EventStoreRepository } from '../event-store-module/event-store.repository.js'
 import knex from 'knex'
 import { Logger } from '@CQRS-variations-test/logger'
-import { UserRepository } from './user.repository.js'
-import { UserAggregate } from './user.aggregate.js'
+import { PaRepository } from './patient.repository.js'
+import { PatientAggregate } from './patient.aggregate.js'
 import { CreateUserCommand } from './commands/CreateUserCommand.js'
 
 describe('UserRepository', () => {

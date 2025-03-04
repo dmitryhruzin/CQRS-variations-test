@@ -1,6 +1,6 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs'
 import { UserNameUpdatedV1 } from '../events/index.js'
-import { UserMainRepository } from '../projections/user-main.repository.js'
+import { UserMainRepository } from '../projections/patient-main.repository.js'
 
 @EventsHandler(UserNameUpdatedV1)
 export class UserNameUpdatedEventHandler implements IEventHandler<UserNameUpdatedV1> {

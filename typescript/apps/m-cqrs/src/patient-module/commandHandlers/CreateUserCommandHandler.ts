@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler, EventPublisher } from '@nestjs/cqrs'
 import { CreateUserCommand } from '../commands/index.js'
-import { UserRepository } from '../user.repository.js'
+import { UserRepository } from '../patient.repository.js'
 
 /**
  * Command handler for creating a new user.

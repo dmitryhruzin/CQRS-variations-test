@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals'
 import { UserCreatedEventHandler } from './UserCreatedEventHandler.js'
-import { UserMainRepository } from '../projections/user-main.repository.js'
+import { UserMainRepository } from '../projections/patient-main.repository.js'
 import knex from 'knex'
 import { UserCreatedV1 } from '../events/index.js'
 

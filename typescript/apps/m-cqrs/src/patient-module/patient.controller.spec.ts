@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals'
-import { UserController } from './user.controller.js'
+import { UserController } from './patient.controller.js'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { CreateUserCommand } from './commands/index.js'
 import { ModuleRef } from '@nestjs/core/injector/module-ref.js'

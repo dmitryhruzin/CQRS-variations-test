@@ -9,7 +9,7 @@ import { User, UserUpdatePayload } from '../../types/user.js'
  * @class UserMainRepository
  */
 @Injectable()
-export class UserMainRepository {
+export class PatientMainRepository {
   private tableName: string = 'users'
 
   // @ts-ignore

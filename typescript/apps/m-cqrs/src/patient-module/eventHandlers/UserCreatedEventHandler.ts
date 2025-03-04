@@ -1,6 +1,6 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs'
 import { UserCreatedV1 } from '../events/index.js'
-import { UserMainRepository } from '../projections/user-main.repository.js'
+import { UserMainRepository } from '../projections/patient-main.repository.js'
 
 /**
  * Event handler for handling user creation events.
