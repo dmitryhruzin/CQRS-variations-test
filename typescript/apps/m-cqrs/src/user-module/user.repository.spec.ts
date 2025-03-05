@@ -54,6 +54,18 @@ describe('UserRepository', () => {
       .mockImplementation(() => ({ insert: () => ({ onConflict: () => ({ merge: () => {}}) }) })) as jest.Mocked<
       typeof db.table
     >
+    db.transaction = jest.fn().mockImplementation(() => {
+      const trx = jest
+        .fn()
+        .mockImplementation(() => ({ insert: () => ({ onConflict: () => ({ merge: () => {} }) }) })) as jest.Mock & {
+        commit: jest.Mock
+        rollback: jest.Mock
+      }
+      trx.commit = jest.fn()
+      trx.rollback = jest.fn()
+
+      return trx
+    }) as jest.MockedFunction<typeof db.transaction>
     const repository = new UserRepository(eventStore, db)
 
     const testCases = [

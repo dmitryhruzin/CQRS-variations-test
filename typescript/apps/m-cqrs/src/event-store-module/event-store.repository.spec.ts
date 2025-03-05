@@ -40,7 +40,6 @@ describe('EventStoreRepository', () => {
         description: 'should save new events',
         id: '4',
         events: EVENTS_MOCK,
-        expected: true,
         saved: [
           { aggregateId: '4', body: JSON.stringify({ name: 'John Doe' }), version: 1, aggregateVersion: 1 },
           { aggregateId: '4', body: JSON.stringify({ name: 'John Smith' }), version: 1, aggregateVersion: 2 }
@@ -50,13 +49,20 @@ describe('EventStoreRepository', () => {
         description: 'should not save events with no ID',
         id: '',
         events: EVENTS_MOCK,
-        expected: false,
-        saved: []
+        saved: [],
+        error: true
       }
     ]
-    test.each(testCases)('$description', async ({ id, events, expected, saved }) => {
-      const result = await repo.saveEvents(id, events)
-      expect(result).toEqual(expected)
+    test.each(testCases)('$description', async ({ id, events, saved, error }) => {
+      const trx = await db.transaction()
+
+      if (error) {
+        await expect(repo.saveEvents(id, events, trx)).rejects.toThrow()
+        await trx.rollback()
+      } else {
+        await expect(repo.saveEvents(id, events, trx)).resolves.not.toThrow()
+        await trx.commit()
+      }
 
       const savedData = await db.table('events').where({ aggregateId: id })
       expect(savedData.sort()).toMatchObject(saved.sort())
