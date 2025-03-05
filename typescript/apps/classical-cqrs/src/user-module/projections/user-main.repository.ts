@@ -23,6 +23,7 @@ export class UserMainRepository {
       await this.knexConnection.schema.createTable(this.tableName, (table) => {
         table.string('id').primary()
         table.string('name')
+        table.integer('version')
       })
     }
   }
@@ -34,15 +35,31 @@ export class UserMainRepository {
    * @returns {Promise<boolean>} Promise resolving to a boolean indicating success.
    */
   async save(record: User): Promise<boolean> {
-    await this.knexConnection.table(this.tableName).insert([record])
+    await this.knexConnection.table(this.tableName).insert([{ ...record, version: 1 }])
 
     return true
   }
 
   async update(id: string, payload: UserUpdatePayload): Promise<boolean> {
-    await this.knexConnection.table(this.tableName).update({ name: payload.name }).where({ id })
+    const trx = await this.knexConnection.transaction()
+    try {
+      const user = await this.knexConnection.table(this.tableName).transacting(trx).forUpdate().where({ id }).first()
+      if (!user || user.version + 1 !== payload.version) {
+        throw new Error(
+          `Version mismatch for User with id: ${id}, current version: ${user?.version}, new version: ${payload.version}`
+        )
+      }
+      await this.knexConnection
+        .table(this.tableName)
+        .transacting(trx)
+        .update({ ...payload })
+        .where({ id })
+      await trx.commit()
 
-    return true
+      return true
+    } finally {
+      await trx.rollback()
+    }
   }
 
   /**

@@ -12,11 +12,9 @@ describe('UserRepository', () => {
     let db: knex.Knex = {} as knex.Knex
 
     beforeEach(() => {
-      db.table = jest
-        .fn()
-        .mockImplementation(() => ({
-          where: () => ({ first: () => ({ id: '1', name: 'John', version: 2 }) })
-        })) as jest.Mocked<typeof db.table>
+      db.table = jest.fn().mockImplementation(() => ({
+        where: () => ({ first: () => ({ id: '1', name: 'John', version: 2 }) })
+      })) as jest.Mocked<typeof db.table>
       repository = new UserRepository({} as EventStoreRepository, db)
     })
 

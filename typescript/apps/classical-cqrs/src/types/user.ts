@@ -14,6 +14,7 @@ export type User = {
 }
 
 export type UserUpdatePayload = {
+  version: number
   name?: string
 }
 

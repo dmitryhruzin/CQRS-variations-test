@@ -21,6 +21,7 @@ type AggregateMetadata = {
 export type AggregateUserData = User & AggregateMetadata
 
 export type UserUpdatePayload = {
+  version: number
   name?: string
 }
 

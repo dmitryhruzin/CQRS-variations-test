@@ -21,14 +21,12 @@ describe('UserRepository', () => {
           { name: 'UserNameUpdated', aggregateVersion: 2, version: 1, body: { name: 'John Doe' } }
         ]) as jest.Mocked<typeof eventStore.getEventsByAggregateId>
       snapshotRepository = new AggregateSnapshotRepository({} as knex.Knex, {} as Logger)
-      snapshotRepository.getLatestSnapshotByAggregateId = jest
-        .fn()
-        .mockImplementation(() => ({
-          id: '123',
-          aggregateVersion: 1,
-          aggregateId: '123',
-          state: { name: 'test' }
-        })) as jest.Mocked<typeof snapshotRepository.getLatestSnapshotByAggregateId>
+      snapshotRepository.getLatestSnapshotByAggregateId = jest.fn().mockImplementation(() => ({
+        id: '123',
+        aggregateVersion: 1,
+        aggregateId: '123',
+        state: { name: 'test' }
+      })) as jest.Mocked<typeof snapshotRepository.getLatestSnapshotByAggregateId>
       repository = new UserRepository(eventStore, snapshotRepository)
     })
 
