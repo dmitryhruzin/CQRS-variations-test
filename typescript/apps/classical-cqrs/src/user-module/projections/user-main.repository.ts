@@ -2,6 +2,7 @@ import knex from 'knex'
 import { Injectable } from '@nestjs/common'
 import { InjectConnection } from 'nest-knexjs'
 import { User, UserUpdatePayload } from '../../types/user.js'
+import { VersionMismatchError } from '../../types/common.js'
 
 /**
  * Repository for managing main user data.
@@ -40,12 +41,12 @@ export class UserMainRepository {
     return true
   }
 
-  async update(id: string, payload: UserUpdatePayload): Promise<boolean> {
+  async update(id: string, payload: UserUpdatePayload, tryCounter = 0): Promise<boolean> {
     const trx = await this.knexConnection.transaction()
     try {
       const user = await this.knexConnection.table(this.tableName).transacting(trx).forUpdate().where({ id }).first()
       if (!user || user.version + 1 !== payload.version) {
-        throw new Error(
+        throw new VersionMismatchError(
           `Version mismatch for User with id: ${id}, current version: ${user?.version}, new version: ${payload.version}`
         )
       }
@@ -57,6 +58,12 @@ export class UserMainRepository {
       await trx.commit()
 
       return true
+    } catch (e) {
+      if (e instanceof VersionMismatchError && tryCounter < 3) {
+        setTimeout(() => this.update(id, payload, tryCounter + 1), 1000)
+        return true
+      }
+      throw e
     } finally {
       await trx.rollback()
     }

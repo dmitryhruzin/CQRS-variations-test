@@ -46,3 +46,5 @@ export type StoredEvent = {
   aggregateVersion: number
   body: { [key: string]: unknown }
 }
+
+export class VersionMismatchError extends Error {}

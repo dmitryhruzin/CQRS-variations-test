@@ -53,3 +53,5 @@ export type Snapshot<T> = null | {
   aggregateVersion: number
   state: T
 }
+
+export class VersionMismatchError extends Error {}
