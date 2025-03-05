@@ -1,6 +1,7 @@
 import knex from 'knex'
 import { Injectable } from '@nestjs/common'
 import { InjectConnection } from 'nest-knexjs'
+import { InjectLogger, Logger } from '@CQRS-variations-test/logger'
 import { User, UserUpdatePayload } from '../../types/user.js'
 import { VersionMismatchError } from '../../types/common.js'
 
@@ -14,7 +15,10 @@ export class UserMainRepository {
   private tableName: string = 'users'
 
   // @ts-ignore
-  constructor(@InjectConnection() private readonly knexConnection: knex.Knex) {}
+  constructor(
+    @InjectConnection() private readonly knexConnection: knex.Knex,
+    @InjectLogger(UserMainRepository.name) private readonly logger: Logger
+  ) {}
 
   /**
    * Initializes the module by creating the users table if it doesn't exist.
@@ -59,8 +63,12 @@ export class UserMainRepository {
 
       return true
     } catch (e) {
-      if (e instanceof VersionMismatchError && tryCounter < 3) {
-        setTimeout(() => this.update(id, payload, tryCounter + 1), 1000)
+      if (e instanceof VersionMismatchError) {
+        if (tryCounter < 3) {
+          setTimeout(() => this.update(id, payload, tryCounter + 1), 1000)
+        } else {
+          this.logger.warn(e)
+        }
         return true
       }
       throw e
