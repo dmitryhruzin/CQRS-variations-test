@@ -7,6 +7,9 @@ export class UserNameUpdatedEventHandler implements IEventHandler<UserNameUpdate
   constructor(private repository: UserMainRepository) {}
 
   async handle(event: UserNameUpdatedV1) {
-    await this.repository.update(event.aggregateId, { name: event.name })
+    await this.repository.update(event.aggregateId, {
+      name: event.name,
+      version: event.aggregateVersion
+    })
   }
 }

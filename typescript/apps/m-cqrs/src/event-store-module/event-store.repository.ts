@@ -39,6 +39,7 @@ export class EventStoreRepository {
         table.string('name')
         table.integer('version')
         table.jsonb('body')
+        table.unique(['aggregateId', 'aggregateVersion'])
       })
     }
   }
@@ -52,13 +53,12 @@ export class EventStoreRepository {
    *
    * This method inserts a list of events into the event store, associated with the specified aggregate ID.
    */
-  async saveEvents(aggregateId: string, events: Event[]): Promise<boolean> {
+  async saveEvents(aggregateId: string, events: Event[], trx: knex.Knex.Transaction): Promise<void> {
     if (!aggregateId) {
-      this.logger.warn('Can not save events. Aggregate ID is not defined.')
-      return false
+      throw new Error('Can not save events. Aggregate ID is not defined.')
     }
 
-    const result = await this.knexConnection.table(this.tableName).insert(
+    await trx(this.tableName).insert(
       events.map((e) => ({
         aggregateId,
         aggregateVersion: e.aggregateVersion,
@@ -67,8 +67,5 @@ export class EventStoreRepository {
         body: e.toJson()
       }))
     )
-    this.logger.info({ message: 'saveEvents result:', body: result })
-
-    return true
   }
 }
