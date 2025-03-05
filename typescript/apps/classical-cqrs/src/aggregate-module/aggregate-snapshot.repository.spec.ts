@@ -26,7 +26,7 @@ describe('AggregateSnapshotRepository', () => {
     const AGGREGATES_MOCK = [
       { aggregateId: '1', aggregateVersion: 1, state: { name: 'John Doe' } },
       { aggregateId: '1', aggregateVersion: 2, state: { name: 'John Doe Updated' } },
-      { aggregateId: '2', aggregateVersion: 1, state: { name: 'John Doe' } },
+      { aggregateId: '2', aggregateVersion: 1, state: { name: 'John Doe' } }
     ]
 
     let repo: AggregateSnapshotRepository
@@ -34,7 +34,7 @@ describe('AggregateSnapshotRepository', () => {
     beforeAll(async () => {
       repo = new AggregateSnapshotRepository(db, logger)
       await repo.onModuleInit()
-      await db.table('snapshots').insert(AGGREGATES_MOCK.map(a => ({ ...a, state: JSON.stringify(a.state) })))
+      await db.table('snapshots').insert(AGGREGATES_MOCK.map((a) => ({ ...a, state: JSON.stringify(a.state) })))
     })
 
     const testCases = [
@@ -56,7 +56,7 @@ describe('AggregateSnapshotRepository', () => {
     ]
     test.each(testCases)('$description', async ({ id, expected }) => {
       const result = await repo.getLatestSnapshotByAggregateId(id)
-      
+
       if (!expected) {
         expect(result).toEqual(expected)
       } else {
@@ -82,7 +82,7 @@ describe('AggregateSnapshotRepository', () => {
         description: 'should save new aggregate',
         aggregate: mockedAggregate,
         expected: true,
-        saved: { aggregateId: "1234", aggregateVersion: 1, state: "{\"id\":\"1234\"}" }
+        saved: { aggregateId: '1234', aggregateVersion: 1, state: '{"id":"1234"}' }
       }
     ]
     test.each(testCases)('$description', async ({ aggregate, expected, saved }) => {

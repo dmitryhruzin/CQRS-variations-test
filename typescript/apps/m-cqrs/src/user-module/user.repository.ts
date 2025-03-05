@@ -65,8 +65,16 @@ export class UserRepository {
   async save(aggregate: UserAggregate, events: Event[]): Promise<boolean> {
     const aggregateId = aggregate.toJson().id
 
-    await this.eventStore.saveEvents(aggregateId, events)
-    await this.knexConnection.table(this.tableName).insert(aggregate.toJson()).onConflict('id').merge()
+    const trx = await this.knexConnection.transaction()
+    try {
+      await this.eventStore.saveEvents(aggregateId, events, trx)
+
+      await trx(this.tableName).insert(aggregate.toJson()).onConflict('id').merge()
+      await trx.commit()
+    } catch (e) {
+      await trx.rollback()
+      throw new Error(`Can not save events. ${e}`)
+    }
 
     this.cache[aggregateId] = aggregate
 

@@ -33,6 +33,7 @@ export type AggregateUserData = User & AggregateMetadata
  * Represents the data that can be used to update a user.
  */
 export type UserUpdatePayload = {
+  version: number
   name?: string
 }
 

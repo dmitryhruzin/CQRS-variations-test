@@ -39,6 +39,7 @@ export class EventStoreRepository {
         table.string('name')
         table.integer('version')
         table.jsonb('body')
+        table.unique(['aggregateId', 'aggregateVersion'])
       })
     }
   }
