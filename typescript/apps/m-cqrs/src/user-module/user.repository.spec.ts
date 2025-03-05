@@ -14,9 +14,9 @@ describe('UserRepository', () => {
     beforeEach(() => {
       db.table = jest
         .fn()
-        .mockImplementation(() => ({ where: () => ({ first: () => ({ id: '1', name: 'John', version: 2 })})})) as jest.Mocked<
-        typeof db.table
-      >
+        .mockImplementation(() => ({
+          where: () => ({ first: () => ({ id: '1', name: 'John', version: 2 }) })
+        })) as jest.Mocked<typeof db.table>
       repository = new UserRepository({} as EventStoreRepository, db)
     })
 
@@ -24,12 +24,12 @@ describe('UserRepository', () => {
       {
         description: 'should build an aggregate using the latest snapshot',
         id: '1',
-        expected: '{\"id\":\"1\",\"version\":2,\"name\":\"John\"}'
+        expected: '{"id":"1","version":2,"name":"John"}'
       },
       {
         description: 'should return an empty aggregate is thee is no ID specified',
         id: '',
-        expected: '{\"version\":0}'
+        expected: '{"version":0}'
       }
     ]
     test.each(testCases)('$description', async ({ id, expected }) => {
@@ -51,7 +51,7 @@ describe('UserRepository', () => {
     const db: knex.Knex = {} as knex.Knex
     db.table = jest
       .fn()
-      .mockImplementation(() => ({ insert: () => ({ onConflict: () => ({ merge: () => {}}) }) })) as jest.Mocked<
+      .mockImplementation(() => ({ insert: () => ({ onConflict: () => ({ merge: () => {} }) }) })) as jest.Mocked<
       typeof db.table
     >
     db.transaction = jest.fn().mockImplementation(() => {

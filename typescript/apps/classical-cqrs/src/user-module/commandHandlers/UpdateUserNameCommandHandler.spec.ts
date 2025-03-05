@@ -10,7 +10,9 @@ import { AggregateSnapshotRepository } from '../../aggregate-module/aggregate-sn
 
 describe('UpdateUserNameCommandHandler', () => {
   describe('execute', () => {
-    const events = [new UserNameUpdatedV1({ aggregateId: '123', aggregateVersion: 1, previousName: 'John', name: 'John Doe' })]
+    const events = [
+      new UserNameUpdatedV1({ aggregateId: '123', aggregateVersion: 1, previousName: 'John', name: 'John Doe' })
+    ]
 
     let repository: UserRepository
     let aggregate: { updateName: (user: UpdateUserNameCommand) => Event[]; commit: () => {} }

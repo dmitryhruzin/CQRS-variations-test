@@ -17,15 +17,18 @@ describe('UserRepository', () => {
       eventStore = new EventStoreRepository({} as knex.Knex, {} as Logger)
       eventStore.getEventsByAggregateId = jest
         .fn()
-        .mockImplementation(() => [{ name: 'UserNameUpdated', aggregateVersion: 2, version: 1, body: { name: 'John Doe' } }]) as jest.Mocked<
-        typeof eventStore.getEventsByAggregateId
-      >
+        .mockImplementation(() => [
+          { name: 'UserNameUpdated', aggregateVersion: 2, version: 1, body: { name: 'John Doe' } }
+        ]) as jest.Mocked<typeof eventStore.getEventsByAggregateId>
       snapshotRepository = new AggregateSnapshotRepository({} as knex.Knex, {} as Logger)
       snapshotRepository.getLatestSnapshotByAggregateId = jest
         .fn()
-        .mockImplementation(() => ({ id: '123', aggregateVersion: 1, aggregateId: '123', state: { name: 'test' } })) as jest.Mocked<
-        typeof snapshotRepository.getLatestSnapshotByAggregateId
-      >
+        .mockImplementation(() => ({
+          id: '123',
+          aggregateVersion: 1,
+          aggregateId: '123',
+          state: { name: 'test' }
+        })) as jest.Mocked<typeof snapshotRepository.getLatestSnapshotByAggregateId>
       repository = new UserRepository(eventStore, snapshotRepository)
     })
 
@@ -33,12 +36,12 @@ describe('UserRepository', () => {
       {
         description: 'should build an aggregate using events from Event Store',
         id: '1',
-        expected: '{\"id\":\"123\",\"version\":2,\"name\":\"John Doe\"}'
+        expected: '{"id":"123","version":2,"name":"John Doe"}'
       },
       {
         description: 'should return an empty aggregate is thee is no ID specified',
         id: '',
-        expected: '{\"version\":0}'
+        expected: '{"version":0}'
       }
     ]
     test.each(testCases)('$description', async ({ id, expected }) => {

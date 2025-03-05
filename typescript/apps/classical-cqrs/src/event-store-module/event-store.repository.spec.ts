@@ -34,7 +34,7 @@ describe('EventStoreRepository', () => {
     beforeAll(async () => {
       repo = new EventStoreRepository(db, logger)
       await repo.onModuleInit()
-      await db.table('events').insert(EVENTS_MOCK.map(e => ({ ...e, body: JSON.stringify(e.body) })))
+      await db.table('events').insert(EVENTS_MOCK.map((e) => ({ ...e, body: JSON.stringify(e.body) })))
     })
 
     const testCases = [
