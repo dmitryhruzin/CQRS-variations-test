@@ -1,20 +1,18 @@
-name: Build and Push Docker image to AWS ECR
+name: CI/CD Pipeline for app m-cqrs
 
 on:
   push:
     branches:
-      - "*"
-  pull_request:
-    branches:
-      - "*"
+      - "main"
+    paths:
+      - 'typescript/apps/m-cqrs/**'
 
 jobs:
-  build-and-push:
-    name: Build and push
+  deploy:
+    name: App m-cqrs
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout
+    - name: Checkout repository
       uses: actions/checkout@v4
     
     - name: Configure AWS credentials
@@ -29,11 +27,68 @@ jobs:
       uses: aws-actions/amazon-ecr-login@v2
 
     - name: Build, Tag, and Push Docker Image
+      id: build-and-push # Add id for step output
       env:
         REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         REPOSITORY: m-sqrs
         IMAGE_TAG: ${{ github.sha }}
       run: |
-        docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+        # Build the Docker image
+        docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG ./typescript/apps/m-cqrs/Dockerfile
+
+        # Push both tags to the repository
         docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
+        # Output variables for next steps
+        echo "registry=$REGISTRY" >> $GITHUB_OUTPUT
+        echo "repository=$REPOSITORY" >> $GITHUB_OUTPUT
+        echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+    - name: Create Dockerrun.aws.json
+      run: |
+        REGISTRY="${{ steps.build-and-push.outputs.registry }}" # Get from previous step outputs
+        REPOSITORY="${{ steps.build-and-push.outputs.repository }}" # Get from previous step outputs
+        IMAGE_TAG="${{ steps.build-and-push.outputs.image_tag }}" # Get from previous step outputs
+        IMAGE_URI="$REGISTRY/$REPOSITORY:$IMAGE_TAG"
+
+        echo "Generated IMAGE_URI: $IMAGE_URI" # For debugging
+
+        cat > Dockerrun.aws.json << EOF
+        {
+          "AWSEBDockerrunVersion": "2",
+          "containerDefinitions": [
+            {
+              "name": "web-container",
+              "image": "$IMAGE_URI",
+              "portMappings": [
+                {
+                  "containerPort": 8000,
+                  "hostPort": 80
+                }
+              ],
+              "essential": true,
+              "memory": 128
+            }
+          ]
+        }
+        EOF
+
+    - name: Cat Dockerrun.aws.json
+      run: |
+        cat Dockerrun.aws.json
+
+    - name: Zip Dockerrun.aws.json
+      run: |
+        zip deployment_package.zip Dockerrun.aws.json
+
+    - name: Deploy to AWS Elastic Beanstalk
+      if: github.event_name == 'push'
+      uses: einaregilsson/beanstalk-deploy@v22
+      with:
+        aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        application_name: CQRS-test  # Your EB application name
+        environment_name: m-sqrs    # Your EB environment name
+        version_label: ${{ steps.build-and-push.outputs.image_tag }}
+        region: eu-central-1
+        deployment_package: deployment_package.zip
