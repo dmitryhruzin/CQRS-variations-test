@@ -3,6 +3,7 @@ import { GetUserByIdMainQueryHandler } from './GetUserByIdMainQueryHandler.js'
 import { UserMainRepository } from '../projections/user-main.repository.js'
 import knex from 'knex'
 import { GetUserByIdMain } from '../queries/index.js'
+import { Logger } from '@CQRS-variations-test/logger'
 
 describe('GetUserByIdMainQueryHandler', () => {
   describe('execute', () => {
@@ -10,7 +11,7 @@ describe('GetUserByIdMainQueryHandler', () => {
     let handler: GetUserByIdMainQueryHandler
 
     beforeEach(() => {
-      repository = new UserMainRepository({} as knex.Knex)
+      repository = new UserMainRepository({} as knex.Knex, {} as Logger)
       repository.getById = jest.fn() as jest.Mocked<typeof repository.getById>
       handler = new GetUserByIdMainQueryHandler(repository)
     })
