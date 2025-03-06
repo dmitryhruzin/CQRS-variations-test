@@ -19,4 +19,12 @@ const config: Knex.Config = {
   }
 }
 
+export const testConfig: Knex.Config = {
+  client: 'sqlite3',
+  useNullAsDefault: true,
+  connection: {
+    filename: './test.db'
+  }
+}
+
 export default config

@@ -13,6 +13,7 @@ import { UserMainRepository } from './projections/user-main.repository.js'
 import { commandHandlers, userEventHandlers, queryHandlers } from './user.module.js'
 import knex from 'knex'
 import { AggregateModule } from '../aggregate-module/aggregate.module.js'
+import { testConfig } from '../../knexfile.js'
 
 describe('UserController (e2e)', () => {
   const context = {
@@ -23,13 +24,7 @@ describe('UserController (e2e)', () => {
   let app: INestApplication
 
   beforeAll(() => {
-    db = knex({
-      client: 'sqlite3',
-      useNullAsDefault: true,
-      connection: {
-        filename: './test.db'
-      }
-    })
+    db = knex(testConfig)
   })
 
   afterAll(async () => {
@@ -47,13 +42,7 @@ describe('UserController (e2e)', () => {
         AggregateModule,
         KnexModule.forRootAsync({
           useFactory: () => ({
-            config: {
-              client: 'sqlite3',
-              useNullAsDefault: true,
-              connection: {
-                filename: './test.db'
-              }
-            }
+            config: testConfig
           })
         })
       ],

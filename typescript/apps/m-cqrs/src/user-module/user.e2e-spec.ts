@@ -1,17 +1,18 @@
-import { LoggerModule } from '@CQRS-variations-test/logger'
 import { afterAll, beforeEach, describe, expect, it } from '@jest/globals'
 import { INestApplication } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { Test, TestingModule } from '@nestjs/testing'
 import supertest from 'supertest'
 import { CqrsModule } from '@nestjs/cqrs'
+import knex from 'knex'
+import { LoggerModule } from '@CQRS-variations-test/logger'
+import { testConfig } from '../../knexfile.js'
 import { EventStoreModule } from '../event-store-module/event-store.module.js'
 import { KnexModule } from 'nest-knexjs'
 import { UserController } from './user.controller.js'
 import { UserRepository } from './user.repository.js'
 import { UserMainRepository } from './projections/user-main.repository.js'
 import { commandHandlers, userEventHandlers, queryHandlers } from './user.module.js'
-import knex from 'knex'
 import { AggregateModule } from '../aggregate-module/aggregate.module.js'
 
 describe('UserController (e2e)', () => {
@@ -23,13 +24,7 @@ describe('UserController (e2e)', () => {
   let app: INestApplication
 
   beforeAll(() => {
-    db = knex({
-      client: 'sqlite3',
-      useNullAsDefault: true,
-      connection: {
-        filename: './test.db'
-      }
-    })
+    db = knex(testConfig)
   })
 
   afterAll(async () => {
@@ -47,13 +42,7 @@ describe('UserController (e2e)', () => {
         AggregateModule,
         KnexModule.forRootAsync({
           useFactory: () => ({
-            config: {
-              client: 'sqlite3',
-              useNullAsDefault: true,
-              connection: {
-                filename: './test.db'
-              }
-            }
+            config: testConfig
           })
         })
       ],
