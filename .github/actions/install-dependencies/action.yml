@@ -12,11 +12,14 @@ runs:
 
     - name: Enable Corepack
       shell: bash
-      run: corepack enable
+      run: |
+        corepack enable
+        echo "Corepack enabled successfully"
 
     - name: Check Corepack version
       shell: bash
       run: corepack --version
+      continue-on-error: true
 
     - name: Get Yarn version from package.json
       id: get-yarn-version
@@ -24,6 +27,7 @@ runs:
       run: |
         YARN_VERSION=$(jq -r '.packageManager | sub("yarn@"; "")' package.json)
         echo "YARN_VERSION=$YARN_VERSION" >> $GITHUB_OUTPUT
+        echo "Yarn version from package.json: $YARN_VERSION"
 
     - name: Determine Corepack Yarn install path
       id: corepack-path
@@ -31,11 +35,13 @@ runs:
       run: |
         COREPACK_YARN_PATH=$(corepack locate yarn@${{ steps.get-yarn-version.outputs.YARN_VERSION }})
         echo "COREPACK_YARN_PATH=$COREPACK_YARN_PATH" >> $GITHUB_OUTPUT
+        echo "Corepack Yarn path: $COREPACK_YARN_PATH"
 
     - name: Check Yarn version (using explicit Corepack path)
       shell: bash
-      run: ${{ steps.corepack-path.outputs.COREPACK_YARN_PATH }} --version
+      run: bash "${{ steps.corepack-path.outputs.COREPACK_YARN_PATH }}" --version
+      continue-on-error: true
 
     - name: Install dependencies (using explicit Corepack path)
       shell: bash
-      run: ${{ steps.corepack-path.outputs.COREPACK_YARN_PATH }} install --immutable
+      run: bash "${{ steps.corepack-path.outputs.COREPACK_YARN_PATH }}" install --immutable
