@@ -8,8 +8,31 @@ on:
       - 'typescript/apps/m-cqrs/**'
 
 jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        uses: ./.github/actions/install-dependencies
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Type Check
+        run: yarn type-check
+
+      - name: Run unit tests
+        run: yarn test
+
+      - name: Build
+        run: yarn build
+
   deploy:
     name: App m-cqrs
+    needs: build-and-test
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
