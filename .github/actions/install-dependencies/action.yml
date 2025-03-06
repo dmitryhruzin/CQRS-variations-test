@@ -1,56 +1,40 @@
-name: 'Setup Yarn'
-description: 'Sets up Yarn to the version specified in package.json using Corepack'
-
+name: "Run on Yarn"
+description: "Composite GitHub Action to run a command with Yarn."
 inputs:
+  command:
+    description: "Command to run"
+    required: true
   node-version:
-    description: 'Node.js version to use'
+    description: "Node Version"
+    default: 20
     required: false
-    default: 'lts/*'
-  cache:
-    description: 'Enable or disable Yarn cache (default: true)'
+  github-token:
+    description: "Github token to use when checking out the repo"
+    default: ${{ github.token }}
     required: false
-    default: 'true'
-    type: boolean
-
+  fetch-depth:
+    description: "Checkout depth"
+    default: 1
 runs:
   using: "composite"
   steps:
-    - name: Setup Node.js environment
-      uses: actions/setup-node@v4
+    - uses: actions/checkout@v4
       with:
-        node-version: ${{ inputs.node-version }}
-        cache: ${{ inputs.cache == 'true' && 'yarn' || '' }}
-
-    - name: Get Yarn version from package.json
-      id: get-yarn-version
+        token: ${{ inputs.github-token }}
+        fetch-depth: ${{ inputs.fetch-depth }}
+    - uses: actions/setup-node@v3
+      with:
+        cache: "yarn"
+        node-version: "${{ inputs.node-version }}"
+    - uses: actions/cache@v4
+      id: yarn-cache
+      with:
+        path: |
+          **/node_modules
+          !**/node_modules/.cache
+        key: ${{ runner.os }}-yarn-node-${{ inputs.node-version }}-${{ hashFiles('**/yarn.lock') }}
+    - name: Install Dependencies If Not Cached
+      run: \[ -d node_modules \] || yarn install --frozen-lockfile
       shell: bash
-      run: |
-        YARN_VERSION=$(grep -oP '"packageManager": "yarn@\K([^\"]+)' package.json)
-        if [ -z "$YARN_VERSION" ]; then
-          echo "::warning::packageManager field with yarn version not found in package.json. Using default Yarn version managed by Corepack."
-          echo "YARN_VERSION=" >> $GITHUB_OUTPUT
-        else
-          echo "YARN_VERSION=$YARN_VERSION" >> $GITHUB_OUTPUT
-        fi
-        echo "Extracted Yarn version: ${{ steps.get-yarn-version.outputs.YARN_VERSION }}"
-
-    - name: Enable Corepack and set Yarn version
+    - run: yarn ${{ inputs.command }}
       shell: bash
-      run: |
-        corepack enable
-        corepack status
-        if [[ -n "${{ steps.get-yarn-version.outputs.YARN_VERSION }}" ]]; then
-          yarn set version ${{ steps.get-yarn-version.outputs.YARN_VERSION }}
-          echo "Using Yarn version: ${{ steps.get-yarn-version.outputs.YARN_VERSION }}"
-        else
-          echo "Using default Yarn version managed by Corepack."
-        fi
-
-    - name: Verify Yarn version after set
-      shell: bash
-      run: yarn --version
-
-    - name: Install dependencies (optional)
-      if: ${{ inputs.cache == 'true' }}
-      shell: bash
-      run: yarn install --frozen-lockfile
