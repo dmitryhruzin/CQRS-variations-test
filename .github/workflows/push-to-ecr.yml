@@ -55,19 +55,15 @@ jobs:
 
         cat > Dockerrun.aws.json << EOF
         {
-          "AWSEBDockerrunVersion": "2",
-          "containerDefinitions": [
+          "AWSEBDockerrunVersion": "1",
+          "Image": {
+            "Name": "$IMAGE_URI",
+            "Update": "true"
+          },
+          "Ports": [
             {
-              "name": "web-container",
-              "image": "$IMAGE_URI",
-              "portMappings": [
-                {
-                  "containerPort": 8000,
-                  "hostPort": 80
-                }
-              ],
-              "essential": true,
-              "memory": 128
+              "ContainerPort": "8000",
+              "HostPort": "80"
             }
           ]
         }
