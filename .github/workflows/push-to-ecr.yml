@@ -21,14 +21,11 @@ jobs:
       # - name: Lint
       #   run: yarn lint
 
-      - name: Type Check
-        run: yarn type-check
+      - name: Build
+        run: yarn build
 
       - name: Run unit tests
         run: yarn test
-
-      - name: Build
-        run: yarn build
 
   deploy:
     name: App m-cqrs
