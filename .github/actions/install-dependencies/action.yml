@@ -38,12 +38,17 @@ runs:
       shell: bash
       run: |
         corepack enable
+        corepack status
         if [[ -n "${{ steps.get-yarn-version.outputs.YARN_VERSION }}" ]]; then
           yarn set version ${{ steps.get-yarn-version.outputs.YARN_VERSION }}
           echo "Using Yarn version: ${{ steps.get-yarn-version.outputs.YARN_VERSION }}"
         else
           echo "Using default Yarn version managed by Corepack."
         fi
+
+    - name: Verify Yarn version after set
+      shell: bash
+      run: yarn --version
 
     - name: Install dependencies (optional)
       if: ${{ inputs.cache == 'true' }}
