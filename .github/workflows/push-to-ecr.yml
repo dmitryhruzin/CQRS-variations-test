@@ -38,7 +38,7 @@ jobs:
         docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
 
         # Tag the image with latest
-        docker tag $REGISTRY/$REPOSITORY:$IMAGE_TAG_SHA $REGISTRY/$REPOSITORY:$IMAGE_TAG_LATEST
+        docker tag $REGISTRY/$REPOSITORY:$IMAGE_TAG $REGISTRY/$REPOSITORY:$IMAGE_TAG_LATEST
 
         # Push both tags to the repository
         docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
