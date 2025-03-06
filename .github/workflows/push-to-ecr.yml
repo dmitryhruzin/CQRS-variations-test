@@ -32,12 +32,17 @@ jobs:
         REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         REPOSITORY: m-sqrs
         IMAGE_TAG: ${{ github.sha }}
+        IMAGE_TAG_LATEST: latest
       run: |
         # Build the Docker image
         docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
 
+        # Tag the image with latest
+        docker tag $REGISTRY/$REPOSITORY:$IMAGE_TAG_SHA $REGISTRY/$REPOSITORY:$IMAGE_TAG_LATEST
+
         # Push both tags to the repository
         docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+        docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG_LATEST
 
         # Output variables for next steps
         echo "registry=$REGISTRY" >> $GITHUB_OUTPUT
