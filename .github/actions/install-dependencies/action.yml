@@ -1,47 +1,51 @@
-name: 'Install Yarn Dependencies and Cache'
-description: 'Installs yarn dependencies (Yarn) with Node.js and caches them for faster workflows - Explicit Corepack Path'
+name: 'Setup Yarn'
+description: 'Sets up Yarn to the version specified in package.json using Corepack'
+
+inputs:
+  node-version:
+    description: 'Node.js version to use'
+    required: false
+    default: 'lts/*'
+  cache:
+    description: 'Enable or disable Yarn cache (default: true)'
+    required: false
+    default: 'true'
+    type: boolean
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
-    - name: Set up Node.js
+    - name: Setup Node.js environment
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
-        cache: 'yarn'
-
-    - name: Enable Corepack
-      shell: bash
-      run: |
-        corepack enable
-        echo "Corepack enabled successfully"
-
-    - name: Check Corepack version
-      shell: bash
-      run: corepack --version
-      continue-on-error: true
+        node-version: ${{ inputs.node-version }}
+        cache: ${{ inputs.cache == 'true' && 'yarn' || '' }}
 
     - name: Get Yarn version from package.json
       id: get-yarn-version
       shell: bash
       run: |
-        YARN_VERSION=$(jq -r '.packageManager | sub("yarn@"; "")' package.json)
-        echo "YARN_VERSION=$YARN_VERSION" >> $GITHUB_OUTPUT
-        echo "Yarn version from package.json: $YARN_VERSION"
+        YARN_VERSION=$(grep -oP '"packageManager": "yarn@\K([^\"]+)' package.json)
+        if [ -z "$YARN_VERSION" ]; then
+          echo "::warning::packageManager field with yarn version not found in package.json. Using default Yarn version managed by Corepack."
+          echo "YARN_VERSION=" >> $GITHUB_OUTPUT
+        else
+          echo "YARN_VERSION=$YARN_VERSION" >> $GITHUB_OUTPUT
+        fi
+        echo "Extracted Yarn version: ${{ steps.get-yarn-version.outputs.YARN_VERSION }}"
 
-    - name: Determine Corepack Yarn install path
-      id: corepack-path
+    - name: Enable Corepack and set Yarn version
       shell: bash
       run: |
-        COREPACK_YARN_PATH=$(corepack locate yarn@${{ steps.get-yarn-version.outputs.YARN_VERSION }})
-        echo "COREPACK_YARN_PATH=$COREPACK_YARN_PATH" >> $GITHUB_OUTPUT
-        echo "Corepack Yarn path: $COREPACK_YARN_PATH"
+        corepack enable
+        if [[ -n "${{ steps.get-yarn-version.outputs.YARN_VERSION }}" ]]; then
+          yarn set version ${{ steps.get-yarn-version.outputs.YARN_VERSION }}
+          echo "Using Yarn version: ${{ steps.get-yarn-version.outputs.YARN_VERSION }}"
+        else
+          echo "Using default Yarn version managed by Corepack."
+        fi
 
-    - name: Check Yarn version (using explicit Corepack path)
+    - name: Install dependencies (optional)
+      if: ${{ inputs.cache == 'true' }}
       shell: bash
-      run: bash "${{ steps.corepack-path.outputs.COREPACK_YARN_PATH }}" --version
-      continue-on-error: true
-
-    - name: Install dependencies (using explicit Corepack path)
-      shell: bash
-      run: bash "${{ steps.corepack-path.outputs.COREPACK_YARN_PATH }}" install --immutable
+      run: yarn install --frozen-lockfile
