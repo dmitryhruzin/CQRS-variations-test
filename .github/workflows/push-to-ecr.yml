@@ -34,7 +34,7 @@ jobs:
         IMAGE_TAG: ${{ github.sha }}
       run: |
         # Build the Docker image
-        docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG ./typescript/apps/m-cqrs/Dockerfile
+        docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG ./typescript/apps/m-cqrs/
 
         # Push both tags to the repository
         docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
