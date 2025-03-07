@@ -1,5 +1,5 @@
-name: 'Install Dependencies'
-description: 'Install Node.js dependencies using Yarn with caching.'
+name: 'Install Dependencies and Run Project'
+description: 'Install Node.js dependencies using Yarn with caching and run the project.'
 runs:
   using: 'composite'
   steps:
@@ -29,3 +29,14 @@ runs:
       if: steps.yarn-cache.outputs.cache-hit != 'true'
       shell: bash
       run: yarn install --frozen-lockfile
+    - name: Build project
+      shell: bash
+      run: target=m-cqrs yarn build
+    - name: Change working directory to application
+      shell: bash
+      working-directory: ./typescript/apps/m-cqrs
+      run: echo "Current working directory: $(pwd)"
+    - name: Run application
+      shell: bash
+      working-directory: ./typescript/apps/m-cqrs
+      run: yarn start
