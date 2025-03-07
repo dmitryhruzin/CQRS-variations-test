@@ -93,13 +93,31 @@ jobs:
               "ContainerPort": "8000",
               "HostPort": "80"
             }
+          ],
+          "environment": [
+            {
+              "Name": "DB_NAME",
+              "Value": "${{ secrets.DB_NAME }}"
+            },
+            {
+              "Name": "DB_USER",
+              "Value": "${{ secrets.DB_USER }}"
+            },
+            {
+              "Name": "DB_PASSWORD",
+              "Value": "${{ secrets.DB_PASSWORD }}"
+            },
+            {
+              "Name": "DB_HOST",
+              "Value": "${{ secrets.DB_HOST }}"
+            }
           ]
         }
         EOF
 
-    - name: Cat Dockerrun.aws.json
-      run: |
-        cat Dockerrun.aws.json
+    # - name: Cat Dockerrun.aws.json
+    #   run: |
+    #     cat Dockerrun.aws.json
 
     - name: Zip Dockerrun.aws.json
       run: |
