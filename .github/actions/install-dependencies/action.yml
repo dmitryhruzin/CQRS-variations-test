@@ -1,5 +1,5 @@
-name: 'Install Dependencies and Run Project'
-description: 'Install Node.js dependencies using Yarn with caching and run the project.'
+name: 'Install Dependencies'
+description: 'Install Node.js dependencies using Yarn with caching and prepare environment.'
 runs:
   using: 'composite'
   steps:
@@ -7,9 +7,11 @@ runs:
       uses: actions/setup-node@v4
       with:
         node-version: 20
-    - name: Enable Yarn using Corepack
+    - name: Enable Yarn using Corepack and prepare Yarn 4
       shell: bash
-      run: corepack enable
+      run: |
+        corepack enable
+        corepack prepare yarn@4 --activate
     - name: Get Yarn cache directory path
       shell: bash
       id: yarn-cache-dir-path
@@ -29,3 +31,6 @@ runs:
       if: steps.yarn-cache.outputs.cache-hit != 'true'
       shell: bash
       run: yarn install --frozen-lockfile
+    - name: Add @nestjs/cli as dev dependency
+      shell: bash
+      run: yarn add -D @nestjs/cli
