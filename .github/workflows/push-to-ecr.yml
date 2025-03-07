@@ -18,20 +18,20 @@ jobs:
       - name: Install Dependencies
         uses: ./.github/actions/install-dependencies
 
-      - name: Build
-        shell: bash
-        run: target=m-cqrs yarn build
-
       - name: Lint
         shell: bash
         run: yarn lint
+
+      - name: Build
+        shell: bash
+        run: target=m-cqrs yarn build
 
       - name: Run unit tests
         shell: bash
         run: yarn test
 
   deploy:
-    name: App m-cqrs
+    name: Deploy app m-cqrs
     needs: build-and-test
     runs-on: ubuntu-latest
     steps:
