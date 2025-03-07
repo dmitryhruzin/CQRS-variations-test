@@ -18,21 +18,17 @@ jobs:
       - name: Install Dependencies
         uses: ./.github/actions/install-dependencies
 
-      # - name: Lint
-      #   run: yarn lint
+      - name: Lint
+        shell: bash
+        run: target=m-cqrs yarn lint
 
       - name: Build
         shell: bash
         run: target=m-cqrs yarn build
 
-      - name: Run application
-        shell: bash
-        working-directory: ./typescript/apps/m-cqrs
-        run: yarn start
-
-
       - name: Run unit tests
-        run: yarn test
+        shell: bash
+        run: target=m-cqrs yarn test
 
   deploy:
     name: App m-cqrs
