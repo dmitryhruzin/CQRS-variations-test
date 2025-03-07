@@ -2,6 +2,7 @@ import { LoggerModule } from '@CQRS-variations-test/logger'
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { KnexModule } from 'nest-knexjs'
+import config from '../knexfile.js'
 import { UserModule } from './user-module/user.module.js'
 import { EventStoreModule } from './event-store-module/event-store.module.js'
 import { AggregateModule } from './aggregate-module/aggregate.module.js'
@@ -18,17 +19,7 @@ import { AggregateModule } from './aggregate-module/aggregate.module.js'
     EventStoreModule,
     AggregateModule,
     UserModule,
-    KnexModule.forRootAsync({
-      useFactory: () => ({
-        config: {
-          client: 'sqlite3',
-          useNullAsDefault: true,
-          connection: {
-            filename: './data.db'
-          }
-        }
-      })
-    })
+    KnexModule.forRootAsync({ useFactory: () => ({ config }) })
   ]
 })
 export class AppModule implements NestModule {

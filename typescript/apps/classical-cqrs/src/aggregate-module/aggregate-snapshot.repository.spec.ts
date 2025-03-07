@@ -1,4 +1,5 @@
 import knex from 'knex'
+import { testConfig } from '../../knexfile.js'
 import { Logger } from '@CQRS-variations-test/logger'
 import { AggregateSnapshotRepository } from './aggregate-snapshot.repository.js'
 import { UserAggregate } from '../user-module/user.aggregate.js'
@@ -8,13 +9,7 @@ describe('AggregateSnapshotRepository', () => {
   let db: knex.Knex
 
   beforeAll(() => {
-    db = knex({
-      client: 'sqlite3',
-      useNullAsDefault: true,
-      connection: {
-        filename: './test.db'
-      }
-    })
+    db = knex(testConfig)
   })
 
   afterAll(async () => {
