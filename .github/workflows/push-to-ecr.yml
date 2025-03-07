@@ -18,13 +18,13 @@ jobs:
       - name: Install Dependencies
         uses: ./.github/actions/install-dependencies
 
-      # - name: Lint
-      #   shell: bash
-      #   run: target=m-cqrs yarn lint
-
       - name: Build
         shell: bash
         run: target=m-cqrs yarn build
+
+      - name: Lint
+        shell: bash
+        run: yarn lint
 
       - name: Run unit tests
         shell: bash
