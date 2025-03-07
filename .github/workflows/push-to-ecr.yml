@@ -28,7 +28,7 @@ jobs:
 
       - name: Run unit tests
         shell: bash
-        run: target=m-cqrs yarn test
+        run: yarn test
 
   deploy:
     name: App m-cqrs
