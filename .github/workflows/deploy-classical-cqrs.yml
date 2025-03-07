@@ -1,11 +1,11 @@
-name: CI/CD Pipeline for app m-cqrs
+name: CI/CD Pipeline for app classical-cqrs
 
 on:
   push:
     branches:
       - "main"
     paths:
-      - 'typescript/apps/m-cqrs/**'
+      - 'typescript/apps/classical-cqrs/**'
 
 jobs:
   build-and-test:
@@ -22,13 +22,13 @@ jobs:
       #   shell: bash
       #   run: yarn lint
 
-      # - name: Build
-      #   shell: bash
-      #   run: target=m-cqrs yarn build
+      - name: Build
+        shell: bash
+        run: target=classical-cqrs yarn build
 
-      # - name: Run unit tests
-      #   shell: bash
-      #   run: yarn test
+      - name: Run unit tests
+        shell: bash
+        run: yarn test
 
   deploy:
     name: Deploy app m-cqrs
@@ -53,7 +53,7 @@ jobs:
       id: build-and-push # Add id for step output
       env:
         REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        REPOSITORY: m-sqrs
+        REPOSITORY: classical-sqrs
         IMAGE_TAG: ${{ github.sha }}
         IMAGE_TAG_LATEST: latest
       run: |
@@ -93,24 +93,6 @@ jobs:
               "ContainerPort": "8000",
               "HostPort": "80"
             }
-          ],
-          "environment": [
-            {
-              "Name": "DB_NAME",
-              "Value": "m_cqrs"
-            },
-            {
-              "Name": "DB_USER",
-              "Value": "postgres"
-            },
-            {
-              "Name": "DB_PASSWORD",
-              "Value": "V(7RsDLML7vqwF4OSX"
-            },
-            {
-              "Name": "DB_HOST",
-              "Value": "mcqrs.cmmjdqtf75as.eu-central-1.rds.amazonaws.com"
-            }
           ]
         }
         EOF
@@ -130,7 +112,7 @@ jobs:
         aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         application_name: CQRS-test  # Your EB application name
-        environment_name: m-sqrs    # Your EB environment name
+        environment_name: CQRS-classical-env    # Your EB environment name
         version_label: ${{ steps.build-and-push.outputs.image_tag }}
         region: eu-central-1
         deployment_package: deployment_package.zip
