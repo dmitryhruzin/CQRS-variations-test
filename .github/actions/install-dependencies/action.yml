@@ -29,13 +29,3 @@ runs:
       if: steps.yarn-cache.outputs.cache-hit != 'true'
       shell: bash
       run: yarn install --frozen-lockfile
-    - name: Build project
-      shell: bash
-      run: target=m-cqrs yarn build
-    - name: Change working directory to application
-      shell: bash
-      working-directory: ./typescript/apps/m-cqrs
-    - name: Run application
-      shell: bash
-      working-directory: ./typescript/apps/m-cqrs
-      run: yarn start
