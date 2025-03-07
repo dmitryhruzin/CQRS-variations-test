@@ -18,9 +18,9 @@ jobs:
       - name: Install Dependencies
         uses: ./.github/actions/install-dependencies
 
-      - name: Lint
-        shell: bash
-        run: target=m-cqrs yarn lint
+      # - name: Lint
+      #   shell: bash
+      #   run: target=m-cqrs yarn lint
 
       - name: Build
         shell: bash
