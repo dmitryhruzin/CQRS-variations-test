@@ -113,6 +113,6 @@ jobs:
         aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         application_name: CQRS-test  # Your EB application name
         environment_name: m-sqrs    # Your EB environment name
-        version_label: ${{ steps.build-and-push.outputs.image_tag }}
+        version_label: ${{ steps.build-and-push.outputs.image_tag }}-m-sqrs
         region: eu-central-1
         deployment_package: deployment_package.zip
