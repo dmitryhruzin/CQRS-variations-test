@@ -8,10 +8,10 @@
   "scripts": {
     "build": "npx nest build",
     "clean": "npx rimraf .serverless .turbo node_modules dist bin coverage && find . -name '*.tsbuildinfo' -type f -delete || exit 0",
-    "dev": "npx nest start --watch",
+    "dev": "NODE_TLS_REJECT_UNAUTHORIZED='0' npx nest start --watch --env-file .env",
     "format": "npx prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "npx eslint . --ext ts,tsx --max-warnings 0 --fix",
-    "start": "npx nest start",
+    "start": "NODE_TLS_REJECT_UNAUTHORIZED='0' npx nest start",
     "test": "NODE_OPTIONS=--experimental-vm-modules npx jest --forceExit --coverage --verbose --testTimeout=10000000 --detectOpenHandles",
     "test:cov": "npx jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
@@ -36,9 +36,13 @@
     "class-validator": "^0.14.1",
     "knex": "^3.1.0",
     "nest-knexjs": "^0.0.26",
+    "pg": "^8.13.3",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "sqlite3": "^5.1.7",
     "uuid": "^11.0.5"
+  },
+  "devDependencies": {
+    "@types/pg": "^8"
   }
 }

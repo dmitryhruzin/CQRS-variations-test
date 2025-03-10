@@ -14,7 +14,7 @@
     "dev": "dotenv -- npx turbo run dev --concurrency=99 --filter @CQRS-variations-test/${target:-\"*\"}",
     "start": "dotenv -- npx turbo run start --concurrency=99 --filter @CQRS-variations-test/${target:-\"*\"}",
     "lint": "yarn prettier && npx turbo run lint --filter @CQRS-variations-test/${target:-\"*\"}",
-    "prettier": "npx prettier --write \"typescript/packages/**/*.{ts,tsx}\" \"typescript/apps/**/*.{ts,tsx}\" \"infra/**/*.{ts,tsx}\"",
+    "prettier": "npx prettier --write \"typescript/packages/**/*.{ts,tsx}\" \"typescript/apps/**/*.{ts,tsx}\"",
     "sort-packages": "npm i -g sort-package-json && sort-package-json && find packages/* apps/* -name package.json -maxdepth 2 -execdir npx sort-package-json \\; -execdir rm -rf node_modules \\;",
     "test": "dotenv -- npx turbo run test --filter @CQRS-variations-test/${target:-\"*\"}",
     "update-packages": "npm i -g npm-check-updates && ncu -u && find packages/* apps/* -name package.json -maxdepth 2 -execdir npx ncu -u \\; -execdir rm -rf node_modules \\;",
@@ -66,5 +66,8 @@
     "*.{js,jsx,ts,tsx}": [
       "eslint --fix"
     ]
+  },
+  "dependencies": {
+    "axios": "^1.8.2"
   }
 }

@@ -91,7 +91,7 @@ export class UserRepository {
 
     await this.eventStore.saveEvents(aggregateId, events)
 
-    if ((aggregate.version + events.length) % 5 === 0) {
+    if ((aggregate.version + events.length) % 50 === 0) {
       const lastAggregate = events.reduce(
         (agg, e) =>
           this.replayEvent(aggregate, {

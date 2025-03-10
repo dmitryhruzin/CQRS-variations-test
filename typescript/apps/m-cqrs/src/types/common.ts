@@ -74,3 +74,5 @@ export type AggregateMetadata = {
   id: string
   version: number
 }
+
+export class VersionMismatchError extends Error {}
