@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config'
 import { KnexModule } from 'nest-knexjs'
 import config from '../knexfile.js'
 import { UserModule } from './user-module/user.module.js'
+import { PatientModule } from './patient-module/patient.module.js'
 import { EventStoreModule } from './event-store-module/event-store.module.js'
 import { AggregateModule } from './aggregate-module/aggregate.module.js'
 
@@ -19,6 +20,7 @@ import { AggregateModule } from './aggregate-module/aggregate.module.js'
     EventStoreModule,
     AggregateModule,
     UserModule,
+    PatientModule,
     KnexModule.forRootAsync({ useFactory: () => ({ config }) })
   ]
 })

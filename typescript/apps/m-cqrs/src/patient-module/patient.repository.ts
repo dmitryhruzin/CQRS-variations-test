@@ -27,7 +27,7 @@ export class PatientRepository {
         table.string('id').primary()
         table.integer('version')
         table.string('name')
-        table.string('medicalHistory')
+        table.jsonb('medicalHistory')
       })
     }
   }
@@ -56,7 +56,11 @@ export class PatientRepository {
     try {
       await this.eventStore.saveEvents(aggregateId, events, trx)
 
-      await trx(this.tableName).insert(aggregate.toJson()).onConflict('id').merge()
+      const data = aggregate.toJson()
+      await trx(this.tableName)
+        .insert({ ...data, medicalHistory: JSON.stringify(data.medicalHistory) })
+        .onConflict('id')
+        .merge()
       await trx.commit()
     } catch (e) {
       await trx.rollback()

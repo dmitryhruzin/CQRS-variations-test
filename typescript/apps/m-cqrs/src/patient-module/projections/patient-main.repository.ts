@@ -21,12 +21,15 @@ export class PatientMainRepository {
         table.string('id').primary()
         table.string('name')
         table.jsonb('medicalHistory')
+        table.integer('version')
       })
     }
   }
 
   async save(record: Patient): Promise<boolean> {
-    await this.knexConnection.table(this.tableName).insert([record])
+    await this.knexConnection
+      .table(this.tableName)
+      .insert([{ ...record, medicalHistory: JSON.stringify(record.medicalHistory), version: 1 }])
 
     return true
   }
@@ -40,12 +43,15 @@ export class PatientMainRepository {
           `Version mismatch for Patient with id: ${id}, current version: ${patient?.version}, new version: ${payload.version}`
         )
       }
+
+      const medicalHistory = payload.medicalHistory ? payload.medicalHistory[0] : '{}'
       await this.knexConnection
         .table(this.tableName)
         .transacting(trx)
         .update({
+          version: payload.version,
           name: payload.name,
-          medicalHistory: this.knexConnection.raw('medicalHistory || ?::jsonb', JSON.stringify(payload.medicalHistory))
+          medicalHistory: this.knexConnection.raw('"medicalHistory" || ?', medicalHistory)
         })
         .where({ id })
       await trx.commit()
