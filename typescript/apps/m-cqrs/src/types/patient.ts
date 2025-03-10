@@ -5,14 +5,14 @@ import { EventBasePayload, AggregateMetadata } from './common.js'
  * @typedef {Object} Patient
  * @property {string} id - The patient's ID.
  * @property {string} name - The patient's name.
- * @property {string[]} madicalHistory - The patient's medical history.
+ * @property {string[]} medicalHistory - The patient's medical history.
  *
  * Represents a patient with an ID, name, and medical history.
  */
 export type Patient = {
   id: string
   name: string
-  madicalHistory: string[]
+  medicalHistory: string[]
 }
 
 /**
@@ -20,7 +20,7 @@ export type Patient = {
  * @typedef {Object} AggregatePatientData
  * @property {string} id - The patient's ID.
  * @property {string} name - The patient's name.
- * @property {string[]} madicalHistory - The patient's medical history.
+ * @property {string[]} medicalHistory - The patient's medical history.
  * @property {number} version - The aggregate version.
  * @property {boolean} isDeleted - Indicates if the aggregate is deleted.
  *
@@ -32,14 +32,14 @@ export type AggregatePatientData = Patient & AggregateMetadata
  * Type representing a patient update payload.
  * @typedef {Object} PatientUpdatePayload
  * @property {string} [name] - The patient's name.
- * @property {string[]} [madicalHistory] - The patient's medical history.
+ * @property {string[]} [medicalHistory] - The patient's medical history.
  *
  * Represents the payload for updating a patient.
  */
 export type PatientUpdatePayload = {
   version: number
   name?: string
-  madicalHistory?: string[]
+  medicalHistory?: string[]
 }
 
 /**
@@ -63,12 +63,12 @@ export type PatientMain = {
  * @property {number} eventVersion - The event version.
  * @property {string} eventTimestamp - The event timestamp.
  * @property {string} name - The patient's name.
- * @property {string[]} madicalHistory - The patient's medical history.
+ * @property {string[]} medicalHistory - The patient's medical history.
  * @property {string} [id] - The patient's ID.
  *
  * Represents the payload for the PatientOnboardedV1 event.
  */
-export type PatientOnboardedV1EventPayload = EventBasePayload & Omit<Patient, 'madicalHistory'>
+export type PatientOnboardedV1EventPayload = EventBasePayload & Omit<Patient, 'medicalHistory'>
 
 /**
  * Type representing the payload for a SurgeryAddedV1 event.

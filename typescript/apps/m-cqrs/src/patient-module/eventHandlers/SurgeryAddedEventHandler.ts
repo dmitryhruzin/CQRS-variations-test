@@ -1,12 +1,15 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs'
-import { UserNameUpdatedV1 } from '../events/index.js'
-import { UserMainRepository } from '../projections/patient-main.repository.js'
+import { SurgeryAddedV1 } from '../events/index.js'
+import { PatientMainRepository } from '../projections/patient-main.repository.js'
 
-@EventsHandler(UserNameUpdatedV1)
-export class UserNameUpdatedEventHandler implements IEventHandler<UserNameUpdatedV1> {
-  constructor(private repository: UserMainRepository) {}
+@EventsHandler(SurgeryAddedV1)
+export class SurgeryAddedEventHandler implements IEventHandler<SurgeryAddedV1> {
+  constructor(private repository: PatientMainRepository) {}
 
-  async handle(event: UserNameUpdatedV1) {
-    await this.repository.update(event.aggregateId, { name: event.name })
+  async handle(event: SurgeryAddedV1) {
+    await this.repository.update(event.aggregateId, {
+      version: event.aggregateVersion,
+      medicalHistory: [JSON.stringify({ label: event.label, doctorName: event.doctorName })]
+    })
   }
 }

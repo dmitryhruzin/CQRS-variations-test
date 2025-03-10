@@ -43,7 +43,10 @@ export class PatientMainRepository {
       await this.knexConnection
         .table(this.tableName)
         .transacting(trx)
-        .update({ ...payload })
+        .update({
+          name: payload.name,
+          medicalHistory: this.knexConnection.raw('medicalHistory || ?::jsonb', JSON.stringify(payload.medicalHistory))
+        })
         .where({ id })
       await trx.commit()
 

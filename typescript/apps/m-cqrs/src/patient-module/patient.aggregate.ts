@@ -16,7 +16,7 @@ export class PatientAggregate extends Aggregate {
       super(data.id, data.version)
 
       this.name = data.name
-      this.medicalHistory = data.madicalHistory
+      this.medicalHistory = data.medicalHistory
     }
   }
 
@@ -64,7 +64,7 @@ export class PatientAggregate extends Aggregate {
       id: this.id,
       version: this.version,
       name: this.name,
-      madicalHistory: this.medicalHistory
+      medicalHistory: this.medicalHistory
     }
   }
 }
