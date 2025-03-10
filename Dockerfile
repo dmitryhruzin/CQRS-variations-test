@@ -18,4 +18,4 @@ WORKDIR /app/typescript/apps/${TARGET_APP}
 
 EXPOSE 8000
 
-CMD ["yarn", "start"]
+CMD ["yarn", "start-cicd"]
