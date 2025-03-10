@@ -10,9 +10,11 @@ RUN yarn install --immutable
 
 RUN yarn add -D @nestjs/cli
 
-RUN target=m-cqrs yarn build
+ARG TARGET_APP
 
-WORKDIR /app/typescript/apps/m-cqrs
+RUN target=${TARGET_APP} yarn build
+
+WORKDIR /app/typescript/apps/${TARGET_APP}
 
 EXPOSE 8000
 
