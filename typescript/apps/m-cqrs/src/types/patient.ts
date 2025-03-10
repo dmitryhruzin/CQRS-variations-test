@@ -67,7 +67,7 @@ export type PatientMain = {
  *
  * Represents the payload for the PatientOnboardedV1 event.
  */
-export type PatientOnboardedV1EventPayload = EventBasePayload & Omit<Patient, 'id'> & { id?: string }
+export type PatientOnboardedV1EventPayload = EventBasePayload & Omit<Patient, 'madicalHistory'>
 
 /**
  * Type representing the payload for a SurgeryAddedV1 event.
@@ -81,10 +81,7 @@ export type PatientOnboardedV1EventPayload = EventBasePayload & Omit<Patient, 'i
  *
  * Represents the payload for the SurgeryAddedV1 event.
  */
-export type SurgeryAddedV1EventPayload = EventBasePayload & {
-  previousName: string
-  name: string
-}
+export type SurgeryAddedV1EventPayload = EventBasePayload & Surgery
 
 /**
  * Type representing the request to onboard a patient.

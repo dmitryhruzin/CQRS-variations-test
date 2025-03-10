@@ -1,4 +1,4 @@
-export { UserCreated } from './UserCreated.js'
-export { UserCreatedV1 } from './UserCreatedV1.js'
-export { UserNameUpdated } from './UserNameUpdated.js'
-export { UserNameUpdatedV1 } from './UserNameUpdatedV1.js'
+export { SurgeryAdded } from './SurgeryAdded.js'
+export { SurgeryAddedV1 } from './SurgeryAddedV1.js'
+export { PatientOnboarded } from './PatientOnboarded.js'
+export { PatientOnboardedV1 } from './PatientOnboardedV1.js'

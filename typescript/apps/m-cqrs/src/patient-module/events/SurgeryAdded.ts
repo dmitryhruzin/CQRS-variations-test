@@ -1,3 +1,3 @@
 import EventBase from '../../types/EventBase.js'
 
-export class UserNameUpdated extends EventBase {}
+export class SurgeryAdded extends EventBase {}
