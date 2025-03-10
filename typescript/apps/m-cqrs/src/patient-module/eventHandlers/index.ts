@@ -1,2 +1,2 @@
-export { UserCreatedEventHandler } from './UserCreatedEventHandler.js'
-export { UserNameUpdatedEventHandler } from './UserNameUpdatedEventHandler.js'
+export { UserCreatedEventHandler } from './PatientOnboardedEventHandler.js'
+export { UserNameUpdatedEventHandler } from './SurgeryAddedEventHandler.js'

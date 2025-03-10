@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals'
 import knex from 'knex'
-import { CreateUserCommandHandler } from './CreateUserCommandHandler.js'
+import { CreateUserCommandHandler } from './OnboardPatientCommandHandler.js'
 import { EventPublisher } from '@nestjs/cqrs'
 import { UserRepository } from '../patient.repository.js'
 import { EventStoreRepository } from '../../event-store-module/event-store.repository.js'
