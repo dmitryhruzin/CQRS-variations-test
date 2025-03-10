@@ -97,6 +97,11 @@ export type OnboardPatientRequest = {
   name: string
 }
 
+export type Surgery = {
+  label: string
+  doctorName: string
+}
+
 /**
  * Type representing the request to add a surgery.
  * @typedef {Object} AddSurgeryRequest
@@ -109,8 +114,5 @@ export type OnboardPatientRequest = {
  */
 export type AddSurgeryRequest = {
   patientId: string
-  surgery: {
-    label: string
-    doctorName: string
-  }
+  surgery: Surgery
 }

@@ -1,2 +1,2 @@
-export { CreateUserCommand } from './CreateUserCommand.js'
-export { UpdateUserNameCommand } from './UpdateUserNameCommand.js'
+export { OnboardPatientCommand } from './OnboardPatientCommand.js'
+export { AddSurgeryCommand } from './AddSurgeryCommand.js'
