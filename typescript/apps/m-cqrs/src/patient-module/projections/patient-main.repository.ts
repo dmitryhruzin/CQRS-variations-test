@@ -1,14 +1,19 @@
 import knex from 'knex'
 import { Injectable } from '@nestjs/common'
 import { InjectConnection } from 'nest-knexjs'
+import { InjectLogger, Logger } from '@CQRS-variations-test/logger'
 import { Patient, PatientUpdatePayload } from '../../types/patient.js'
+import { VersionMismatchError } from '../../types/common.js'
 
 @Injectable()
 export class PatientMainRepository {
   private tableName: string = 'patients'
 
   // @ts-ignore
-  constructor(@InjectConnection() private readonly knexConnection: knex.Knex) {}
+  constructor(
+    @InjectConnection() private readonly knexConnection: knex.Knex,
+    @InjectLogger(PatientMainRepository.name) private readonly logger: Logger
+  ) {}
 
   async onModuleInit() {
     if (!(await this.knexConnection.schema.hasTable(this.tableName))) {
@@ -26,16 +31,36 @@ export class PatientMainRepository {
     return true
   }
 
-  async update(id: string, payload: PatientUpdatePayload): Promise<boolean> {
-    await this.knexConnection
-      .table(this.tableName)
-      .update({
-        name: payload.name,
-        medicalHistory: payload.madicalHistory
-      })
-      .where({ id })
+  async update(id: string, payload: PatientUpdatePayload, tryCounter = 0): Promise<boolean> {
+    const trx = await this.knexConnection.transaction()
+    try {
+      const patient = await this.knexConnection.table(this.tableName).transacting(trx).forUpdate().where({ id }).first()
+      if (!patient || patient.version + 1 !== payload.version) {
+        throw new VersionMismatchError(
+          `Version mismatch for Patient with id: ${id}, current version: ${patient?.version}, new version: ${payload.version}`
+        )
+      }
+      await this.knexConnection
+        .table(this.tableName)
+        .transacting(trx)
+        .update({ ...payload })
+        .where({ id })
+      await trx.commit()
 
-    return true
+      return true
+    } catch (e) {
+      if (e instanceof VersionMismatchError) {
+        if (tryCounter < 3) {
+          setTimeout(() => this.update(id, payload, tryCounter + 1), 1000)
+        } else {
+          this.logger.warn(e)
+        }
+        return true
+      }
+      throw e
+    } finally {
+      await trx.rollback()
+    }
   }
 
   async getAll(): Promise<Patient[]> {

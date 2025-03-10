@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals'
 import { UserAggregate } from './patient.aggregate.js'
-import { CreateUserCommand } from './commands/CreateUserCommand.js'
+import { CreateUserCommand } from './commands/OnboardPatientCommand.js'
 
 describe('UserAggregate', () => {
   describe('toJson', () => {

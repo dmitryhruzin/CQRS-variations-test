@@ -37,6 +37,7 @@ export type AggregatePatientData = Patient & AggregateMetadata
  * Represents the payload for updating a patient.
  */
 export type PatientUpdatePayload = {
+  version: number
   name?: string
   madicalHistory?: string[]
 }

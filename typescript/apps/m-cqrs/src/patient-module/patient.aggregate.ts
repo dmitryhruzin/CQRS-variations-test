@@ -1,41 +1,32 @@
 import { v4 } from 'uuid'
-import { AggregateUserData } from '../types/user.js'
+import { AggregatePatientData } from '../types/patient.js'
 import { Aggregate } from '../aggregate-module/aggregate.js'
-import { UserCreatedV1, UserNameUpdatedV1 } from './events/index.js'
-import { CreateUserCommand, UpdateUserNameCommand } from './commands/index.js'
+import { PatientOnboardedV1, SurgeryAddedV1 } from './events/index.js'
+import { OnboardPatientCommand, AddSurgeryCommand } from './commands/index.js'
 
-/**
- * Represents the UserAggregate, managing user state and behavior.
- *
- * @class UserAggregate
- * @extends {Aggregate}
- */
-export class UserAggregate extends Aggregate {
+export class PatientAggregate extends Aggregate {
   private name: string
 
-  constructor(data: AggregateUserData | null = null) {
+  private medicalHistory: string[] = []
+
+  constructor(data: AggregatePatientData | null = null) {
     if (!data) {
       super()
     } else {
       super(data.id, data.version)
 
       this.name = data.name
+      this.medicalHistory = data.madicalHistory
     }
   }
 
-  /**
-   * Creates a new user aggregate.  Applies the UserCreatedV1 event to initialize the user.
-   *
-   * @param {CreateUserCommand} user - The command containing the user data for creation.
-   * @returns {Event[]} An array containing the UserCreatedV1 event that was applied.
-   */
-  create(user: CreateUserCommand) {
+  onboartPatient(patient: OnboardPatientCommand) {
     this.id = v4()
-    this.name = user.name
+    this.name = patient.name
 
     this.version += 1
 
-    const event = new UserCreatedV1({
+    const event = new PatientOnboardedV1({
       id: this.id,
       name: this.name,
       aggregateId: this.id,
@@ -47,38 +38,24 @@ export class UserAggregate extends Aggregate {
     return [event]
   }
 
-  /**
-   * Updates the name of the user. Applies the UserNameUpdatedV1 event.
-   *
-   * @param {UpdateUserNameCommand} command - The command containing the user ID and new name.
-   * @returns {Event[]} An array containing the UserNameUpdatedV1 event that was applied.
-   */
-  updateName(command: UpdateUserNameCommand) {
+  addSurgery(command: AddSurgeryCommand) {
     this.version += 1
 
-    const event = new UserNameUpdatedV1({
-      previousName: this.name,
-      name: command.name,
+    const event = new SurgeryAddedV1({
+      label: command.surgery.label,
+      doctorName: command.surgery.doctorName,
       aggregateId: this.id,
       aggregateVersion: this.version
     })
 
-    this.name = command.name
+    this.medicalHistory.push(JSON.stringify(command.surgery))
 
     this.apply(event)
 
     return [event]
   }
 
-  /**
-   * Converts the aggregate to a JSON representation.
-   *
-   * @returns {AggregateUserData} The user data in JSON format, including id, name, and version.
-   * @throws {Error} If the aggregate is empty or not properly initialized.
-   *
-   * This method serializes the user aggregate into a JSON object suitable for storage or transmission.
-   */
-  toJson(): AggregateUserData {
+  toJson(): AggregatePatientData {
     if (!this.id) {
       throw new Error('Aggregate is empty')
     }
@@ -86,7 +63,8 @@ export class UserAggregate extends Aggregate {
     return {
       id: this.id,
       version: this.version,
-      name: this.name
+      name: this.name,
+      madicalHistory: this.medicalHistory
     }
   }
 }

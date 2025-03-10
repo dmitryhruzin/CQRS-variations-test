@@ -41,8 +41,16 @@ export class PatientController {
   @Post('/add-surgery')
   @HttpCode(200)
   async addSurgery(@Body() payload: AddSurgeryRequest): Promise<AcknowledgementResponse> {
-    if (!payload.name || payload.name.trim() === '') {
-      throw new Error('Name must be a non-empty string')
+    if (!payload.patientId || payload.patientId.trim() === '') {
+      throw new Error('Patient ID must be a non-empty string')
+    }
+
+    if (!payload.surgery.label || payload.surgery.label.trim() === '') {
+      throw new Error('Label must be a non-empty string')
+    }
+
+    if (!payload.surgery.doctorName || payload.surgery.doctorName.trim() === '') {
+      throw new Error('Doctor name must be a non-empty string')
     }
 
     const command = new AddSurgeryCommand(payload)

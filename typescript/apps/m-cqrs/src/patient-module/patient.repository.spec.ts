@@ -4,7 +4,7 @@ import knex from 'knex'
 import { Logger } from '@CQRS-variations-test/logger'
 import { PaRepository } from './patient.repository.js'
 import { PatientAggregate } from './patient.aggregate.js'
-import { CreateUserCommand } from './commands/CreateUserCommand.js'
+import { CreateUserCommand } from './commands/OnboardPatientCommand.js'
 
 describe('UserRepository', () => {
   describe('buildUserAggregate', () => {

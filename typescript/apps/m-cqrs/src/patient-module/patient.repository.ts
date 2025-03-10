@@ -16,7 +16,6 @@ export class PatientRepository {
 
   private cache: { [key: string]: PatientAggregate } = {}
 
-  // @ts-ignore
   constructor(
     private readonly eventStore: EventStoreRepository,
     @InjectConnection() private readonly knexConnection: knex.Knex
@@ -28,18 +27,12 @@ export class PatientRepository {
         table.string('id').primary()
         table.integer('version')
         table.string('name')
-        table.string('medicalHistory') // Example patient-specific field
+        table.string('medicalHistory')
       })
     }
   }
 
-  /**
-   * Builds a patient aggregate by ID.
-   *
-   * @param {string} [id] - The patient ID (optional).
-   * @returns {Promise<PatientAggregate>} Promise resolving to the patient aggregate.
-   */
-  async buildUserAggregate(id?: string): Promise<PatientAggregate> {
+  async buildAggregate(id?: string): Promise<PatientAggregate> {
     if (!id) {
       return new PatientAggregate()
     }
@@ -48,26 +41,27 @@ export class PatientRepository {
       return this.cache[id]
     }
 
-    const userData = await this.knexConnection.table(this.tableName).where({ id }).first()
-    const aggregate = new PatientAggregate(userData)
+    const data = await this.knexConnection.table(this.tableName).where({ id }).first()
+    const aggregate = new PatientAggregate(data)
 
     this.cache[id] = aggregate
 
     return aggregate
   }
 
-  /**
-   * Saves the patient aggregate and events to the event store.
-   *
-   * @param {PatientAggregate} aggregate - The patient aggregate.
-   * @param {Event[]} events - The events to save.
-   * @returns {Promise<boolean>} Promise resolving to a boolean indicating success.
-   */
   async save(aggregate: PatientAggregate, events: Event[]): Promise<boolean> {
     const aggregateId = aggregate.toJson().id
 
-    await this.eventStore.saveEvents(aggregateId, events)
-    await this.knexConnection.table(this.tableName).insert(aggregate.toJson()).onConflict('id').merge()
+    const trx = await this.knexConnection.transaction()
+    try {
+      await this.eventStore.saveEvents(aggregateId, events, trx)
+
+      await trx(this.tableName).insert(aggregate.toJson()).onConflict('id').merge()
+      await trx.commit()
+    } catch (e) {
+      await trx.rollback()
+      throw new Error(`Can not save events. ${e}`)
+    }
 
     this.cache[aggregateId] = aggregate
 
