@@ -1,2 +1,2 @@
-export { GetUserByIdMainQueryHandler } from './GetUserByIdMainQueryHandler.js'
-export { GetUsersMainQueryHandler } from './GetUsersMainQueryHandler.js'
+export { GetPatientByIdMainQueryHandler } from './GetPatientByIdMainQueryHandler.js'
+export { GetPatientsMainQueryHandler } from './GetPatientsMainQueryHandler.js'

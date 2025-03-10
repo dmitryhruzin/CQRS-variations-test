@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals'
-import { GetUserByIdMainQueryHandler } from './GetUserByIdMainQueryHandler.js'
+import { GetUserByIdMainQueryHandler } from './GetPatientByIdMainQueryHandler.js'
 import { UserMainRepository } from '../projections/patient-main.repository.js'
 import knex from 'knex'
 import { GetUserByIdMain } from '../queries/index.js'
