@@ -57,10 +57,14 @@ export class EventStoreRepository {
       .table(this.tableName)
       .where({ aggregateId: id })
       .andWhere('aggregateVersion', '>', aggregateVersion)
-    return records.map((r) => ({
-      ...r,
-      body: JSON.parse(r.body)
-    }))
+
+    if (records.length && typeof records[0].body === 'string') {
+      return records.map((r) => ({
+        ...r,
+        body: JSON.parse(r.body)
+      }))
+    }
+    return records
   }
 
   /**
