@@ -58,7 +58,7 @@ jobs:
         IMAGE_TAG_LATEST: latest
       run: |
         # Build the Docker image
-        docker build --build-arg TARGET_APP=m-sqrs -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+        docker build --build-arg TARGET_APP=m-cqrs -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
 
         # Tag the image with latest
         docker tag $REGISTRY/$REPOSITORY:$IMAGE_TAG $REGISTRY/$REPOSITORY:$IMAGE_TAG_LATEST
