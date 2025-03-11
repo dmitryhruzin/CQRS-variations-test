@@ -12,7 +12,7 @@ jobs:
     uses: ./.github/workflows/workflow-call-deploy-app.yml
     with:
       app_name: m-cqrs
-      docker_repository: m-cqrs # Make sure this matches your ECR repo name
+      docker_repository: m-sqrs # Make sure this matches your ECR repo name
       eb_application_name: CQRS-test # Your EB application name
       eb_environment_name: m-sqrs # Your EB environment name
       eb_version_label_suffix: m-sqrs
