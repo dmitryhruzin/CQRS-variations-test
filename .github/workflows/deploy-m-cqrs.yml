@@ -8,111 +8,14 @@ on:
       - 'typescript/apps/m-cqrs/**'
 
 jobs:
-  build-and-test:
-    name: Build and Test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install Dependencies
-        uses: ./.github/actions/install-dependencies
-
-      # - name: Lint
-      #   shell: bash
-      #   run: yarn lint
-
-      - name: Build
-        shell: bash
-        run: target=m-cqrs yarn build
-
-      - name: Run unit tests
-        shell: bash
-        run: yarn test
-
-  deploy:
-    name: Deploy app m-cqrs
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-    
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: eu-central-1
-
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v2
-
-    - name: Build, Tag, and Push Docker Image
-      id: build-and-push # Add id for step output
-      env:
-        REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        REPOSITORY: m-sqrs
-        IMAGE_TAG: ${{ github.sha }}
-        IMAGE_TAG_LATEST: latest
-      run: |
-        # Build the Docker image
-        docker build --build-arg TARGET_APP=m-cqrs -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
-
-        # Tag the image with latest
-        docker tag $REGISTRY/$REPOSITORY:$IMAGE_TAG $REGISTRY/$REPOSITORY:$IMAGE_TAG_LATEST
-
-        # Push both tags to the repository
-        docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
-        docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG_LATEST
-
-        # Output variables for next steps
-        echo "registry=$REGISTRY" >> $GITHUB_OUTPUT
-        echo "repository=$REPOSITORY" >> $GITHUB_OUTPUT
-        echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
-
-    - name: Create Dockerrun.aws.json
-      run: |
-        REGISTRY="${{ steps.build-and-push.outputs.registry }}" # Get from previous step outputs
-        REPOSITORY="${{ steps.build-and-push.outputs.repository }}" # Get from previous step outputs
-        IMAGE_TAG="${{ steps.build-and-push.outputs.image_tag }}" # Get from previous step outputs
-        IMAGE_URI="$REGISTRY/$REPOSITORY:$IMAGE_TAG"
-
-        echo "Generated IMAGE_URI: $IMAGE_URI" # For debugging
-
-        cat > Dockerrun.aws.json << EOF
-        {
-          "AWSEBDockerrunVersion": "1",
-          "Image": {
-            "Name": "$IMAGE_URI",
-            "Update": "true"
-          },
-          "Ports": [
-            {
-              "ContainerPort": "8000",
-              "HostPort": "80"
-            }
-          ]
-        }
-        EOF
-
-    - name: Cat Dockerrun.aws.json
-      run: |
-        cat Dockerrun.aws.json
-
-    - name: Zip Dockerrun.aws.json
-      run: |
-        zip deployment_package.zip Dockerrun.aws.json
-
-    - name: Deploy to AWS Elastic Beanstalk
-      if: github.event_name == 'push'
-      uses: einaregilsson/beanstalk-deploy@v22
-      with:
-        aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        application_name: CQRS-test  # Your EB application name
-        environment_name: m-sqrs    # Your EB environment name
-        version_label: ${{ steps.build-and-push.outputs.image_tag }}-m-sqrs
-        region: eu-central-1
-        deployment_package: deployment_package.zip
+  deploy-app:
+    uses: ./.github/workflows/deploy-app.yml@main
+    with:
+      app_name: m-cqrs
+      docker_repository: m-cqrs # Make sure this matches your ECR repo name
+      eb_application_name: CQRS-test # Your EB application name
+      eb_environment_name: m-sqrs # Your EB environment name
+      eb_version_label_suffix: m-sqrs
+      container_port: 8000
+      host_port: 80  
+    secrets: inherit
