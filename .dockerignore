@@ -1,0 +1,40 @@
+# Node Modules
+node_modules
+typescript/apps/*/node_modules
+typescript/packages/*/node_modules
+
+# Build Artifacts
+dist
+typescript/apps/*/dist
+typescript/packages/*/dist
+
+# Test Files and Configurations
+*.spec.ts
+*.e2e-spec.ts
+jest.config.ts
+tsconfig.spec.json
+**/__tests__
+**/test*
+
+# Documentation
+docs
+
+# Git and GitHub
+.git
+.github
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Logs and temp files
+*.log
+tmp
+temp
+
+# Yarn related - if you don't need to copy yarn.lock (usually you do)
+# yarn.lock
+
+# Local environment files (if any)
+.env
+.env.*

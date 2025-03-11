@@ -1,0 +1,21 @@
+name: CI/CD Pipeline for app classical-cqrs
+
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - 'typescript/apps/classical-cqrs/**'
+
+jobs:
+  deploy-app:
+    uses: ./.github/workflows/workflow-call-deploy-app.yml
+    with:
+      app_name: classical-cqrs
+      docker_repository: classical-cqrs # Make sure this matches your ECR repo name
+      eb_application_name: CQRS-test # Your EB application name
+      eb_environment_name: classical-cqrs # Your EB environment name
+      eb_version_label_suffix: classical-cqrs
+      container_port: 8000
+      host_port: 80  
+    secrets: inherit
