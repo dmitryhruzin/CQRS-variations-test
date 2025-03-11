@@ -24,8 +24,8 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const commands = 120
-            const queries = 36
+            const commands = 41
+            const queries = 19
             const additionNew = 0.5
             const modificationOld = 0.5
 
@@ -47,19 +47,19 @@
             }
 
             const classicalCQRS = {
-                read: 118,
-                write: 461,
+                read: 43.8,
+                write: 132.43,
                 commandImplementation: 95,
-                commandModification: 32,
+                commandModification: 33,
                 queryImplementation: 18,
                 queryModification: 10,
             }
 
             const mCQRS = {
-                read: 115,
-                write: 1063,
+                read: 43.84,
+                write: 210.89,
                 commandImplementation: 81,
-                commandModification: 23,
+                commandModification: 24,
                 queryImplementation: 18,
                 queryModification: 10,
             }
@@ -81,6 +81,9 @@
             console.log(mCQRSNorm, classicalCQRSNorm)
 
             const matrix = Array.from(Array(100), () => new Array(100));
+
+            let mCQRSSuggestions = 0
+            let classicalCQRSSuggestions = 0
 
             for (let i = 0; i < 100; i++) {
                 for (let j = 0; j < 100; j++) {
@@ -112,8 +115,14 @@
                     }
 
                     matrix[i][j] = mCQRSResult
+                    
+                    if (mCQRSResult > 50) mCQRSSuggestions++
+                    if (classicalCQRSResult > 50) classicalCQRSSuggestions++
                 }
             }
+
+            console.log('mCQRSSuggestions', mCQRSSuggestions)
+            console.log('classicalCQRSSuggestions', classicalCQRSSuggestions)
 
             const ctx = document.getElementById("heatmapChart").getContext("2d");
             
