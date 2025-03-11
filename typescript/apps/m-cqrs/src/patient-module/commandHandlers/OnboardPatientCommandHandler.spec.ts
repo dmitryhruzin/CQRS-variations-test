@@ -1,41 +1,40 @@
 import { jest } from '@jest/globals'
 import knex from 'knex'
-import { CreateUserCommandHandler } from './OnboardPatientCommandHandler.js'
+import { OnboardPatientCommandHandler } from './OnboardPatientCommandHandler.js'
 import { EventPublisher } from '@nestjs/cqrs'
-import { UserRepository } from '../patient.repository.js'
+import { PatientRepository } from '../patient.repository.js'
 import { EventStoreRepository } from '../../event-store-module/event-store.repository.js'
 import { EventBus } from '@nestjs/cqrs/dist/event-bus.js'
-import { CreateUserCommand } from '../commands/index.js'
-import { UserWithOptionalId } from '../../types/user.js'
-import { UserCreatedV1 } from '../events/index.js'
+import { OnboardPatientCommand } from '../commands/index.js'
+import { PatientOnboardedV1 } from '../events/index.js'
 
-describe('CreateUserCommandHandler', () => {
+describe('OnboardPatientCommandHandler', () => {
   describe('execute', () => {
-    const events = [new UserCreatedV1({ aggregateId: '123', aggregateVersion: 1, id: '1', name: 'John Doe' })]
+    const events = [new PatientOnboardedV1({ aggregateId: '123', aggregateVersion: 1, id: '1', name: 'John Doe' })]
 
-    let repository: UserRepository
-    let aggregate: { create: (user: UserWithOptionalId) => Event[]; commit: () => {} }
+    let repository: PatientRepository
+    let aggregate: { onboardPatient: (patient: OnboardPatientCommand) => Event[]; commit: () => {} }
     let publisher: EventPublisher
-    let handler: CreateUserCommandHandler
+    let handler: OnboardPatientCommandHandler
 
     beforeEach(() => {
-      repository = new UserRepository({} as EventStoreRepository, {} as knex.Knex)
+      repository = new PatientRepository({} as EventStoreRepository, {} as knex.Knex)
       repository.save = jest.fn() as jest.Mocked<typeof repository.save>
       aggregate = {
-        create: jest.fn().mockImplementation(() => events) as jest.Mocked<typeof aggregate.create>,
+        onboardPatient: jest.fn().mockImplementation(() => events) as jest.Mocked<typeof aggregate.onboardPatient>,
         commit: jest.fn() as jest.Mocked<typeof aggregate.commit>
       }
       publisher = new EventPublisher({} as EventBus)
       publisher.mergeObjectContext = jest.fn().mockImplementation(() => {
         return aggregate
       }) as jest.Mocked<typeof publisher.mergeObjectContext>
-      handler = new CreateUserCommandHandler(repository, publisher)
+      handler = new OnboardPatientCommandHandler(repository, publisher)
     })
 
     const testCases = [
       {
         description: 'should update aggregate, save and commit events',
-        payload: new CreateUserCommand({ name: 'John Doe' }),
+        payload: new OnboardPatientCommand({ name: 'John Doe' }),
         expected: events
       }
     ]
@@ -43,7 +42,7 @@ describe('CreateUserCommandHandler', () => {
       await handler.execute(payload)
 
       expect(repository.save).toHaveBeenCalledWith(aggregate, expected)
-      expect(aggregate.create).toHaveBeenCalledWith(payload)
+      expect(aggregate.onboardPatient).toHaveBeenCalledWith(payload)
       expect(aggregate.commit).toHaveBeenCalledTimes(1)
     })
   })

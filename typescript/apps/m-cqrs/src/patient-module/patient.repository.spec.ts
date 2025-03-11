@@ -2,13 +2,13 @@ import { jest } from '@jest/globals'
 import { EventStoreRepository } from '../event-store-module/event-store.repository.js'
 import knex from 'knex'
 import { Logger } from '@CQRS-variations-test/logger'
-import { PaRepository } from './patient.repository.js'
+import { PatientRepository } from './patient.repository.js'
 import { PatientAggregate } from './patient.aggregate.js'
-import { CreateUserCommand } from './commands/OnboardPatientCommand.js'
+import { OnboardPatientCommand } from './commands/OnboardPatientCommand.js'
 
-describe('UserRepository', () => {
-  describe('buildUserAggregate', () => {
-    let repository: UserRepository
+describe('PatientRepository', () => {
+  describe('buildAggregate', () => {
+    let repository: PatientRepository
     let db: knex.Knex = {} as knex.Knex
 
     beforeEach(() => {
@@ -17,7 +17,7 @@ describe('UserRepository', () => {
         .mockImplementation(() => ({ where: () => ({ first: () => ({ id: '1', name: 'John', version: 2 })})})) as jest.Mocked<
         typeof db.table
       >
-      repository = new UserRepository({} as EventStoreRepository, db)
+      repository = new PatientRepository({} as EventStoreRepository, db)
     })
 
     const testCases = [
@@ -29,17 +29,17 @@ describe('UserRepository', () => {
       {
         description: 'should return an empty aggregate is thee is no ID specified',
         id: '',
-        expected: '{\"version\":0}'
+        expected: '{\"version\":0,\"medicalHistory\":[]}'
       }
     ]
     test.each(testCases)('$description', async ({ id, expected }) => {
-      const result = await repository.buildUserAggregate(id)
+      const result = await repository.buildAggregate(id)
       expect(JSON.stringify(result)).toEqual(expected)
     })
 
     test('should return an aggregate from cache', async () => {
-      await repository.buildUserAggregate('2')
-      await repository.buildUserAggregate('2')
+      await repository.buildAggregate('2')
+      await repository.buildAggregate('2')
 
       expect(db.table).toHaveBeenCalledTimes(1)
     })
@@ -51,17 +51,29 @@ describe('UserRepository', () => {
     const db: knex.Knex = {} as knex.Knex
     db.table = jest
       .fn()
-      .mockImplementation(() => ({ insert: () => ({ onConflict: () => ({ merge: () => {}}) }) })) as jest.Mocked<
+      .mockImplementation(() => ({ insert: () => ({ onConflict: () => ({ merge: () => {} }) }) })) as jest.Mocked<
       typeof db.table
     >
-    const repository = new UserRepository(eventStore, db)
+    db.transaction = jest.fn().mockImplementation(() => {
+      const trx = jest
+        .fn()
+        .mockImplementation(() => ({ insert: () => ({ onConflict: () => ({ merge: () => {} }) }) })) as jest.Mock & {
+        commit: jest.Mock
+        rollback: jest.Mock
+      }
+      trx.commit = jest.fn()
+      trx.rollback = jest.fn()
+
+      return trx
+    }) as jest.MockedFunction<typeof db.transaction>
+    const repository = new PatientRepository(eventStore, db)
 
     const testCases = [
       {
         description: 'should save events to the Event Sotre',
         getAggregate: () => {
-          const aggregate = new UserAggregate()
-          aggregate.create(new CreateUserCommand({ name: 'John Doe' }))
+          const aggregate = new PatientAggregate()
+          aggregate.onboardPatient(new OnboardPatientCommand({ name: 'John Doe' }))
           return aggregate
         },
         expected: true
@@ -69,7 +81,7 @@ describe('UserRepository', () => {
       {
         description: 'should return an empty aggregate is thee is no ID specified',
         getAggregate: () => {
-          return new UserAggregate()
+          return new PatientAggregate()
         },
         expectedError: 'Aggregate is empty'
       }

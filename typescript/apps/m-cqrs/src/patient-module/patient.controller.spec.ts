@@ -1,21 +1,21 @@
 import { jest } from '@jest/globals'
-import { UserController } from './patient.controller.js'
+import { PatientController } from './patient.controller.js'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
-import { CreateUserCommand } from './commands/index.js'
+import { OnboardPatientCommand } from './commands/index.js'
 import { ModuleRef } from '@nestjs/core/injector/module-ref.js'
-import { GetUsersMain, GetUserByIdMain } from './queries/index.js'
+import { GetPatientsMain, GetPatientByIdMain } from './queries/index.js'
 
-describe('UserController', () => {
+describe('PatientController', () => {
   describe('createUser', () => {
     const commandBus = new CommandBus({} as ModuleRef)
     commandBus.execute = jest.fn() as jest.Mocked<typeof commandBus.execute>
-    const controller = new UserController(commandBus, {} as QueryBus)
+    const controller = new PatientController(commandBus, {} as QueryBus)
 
     const testCases = [
       {
         description: 'should create CreateUserCommand',
         payload: { name: 'John Doe' },
-        expected: new CreateUserCommand({ name: 'John Doe' })
+        expected: new OnboardPatientCommand({ name: 'John Doe' })
       },
       {
         description: 'should throw a validation error',
@@ -25,7 +25,7 @@ describe('UserController', () => {
     ]
     test.each(testCases)('$description', async ({ payload, expected, expectedError }) => {
       try {
-        await controller.createUser(payload)
+        await controller.onboardPatient(payload)
         expect(commandBus.execute).toHaveBeenCalledWith(expected)
 
         if (expectedError) {
@@ -40,33 +40,33 @@ describe('UserController', () => {
     })
   })
 
-  describe('getUsersMain', () => {
+  describe('getPatientsMain', () => {
     const queryBus = new QueryBus({} as ModuleRef)
     queryBus.execute = jest.fn() as unknown as jest.Mocked<typeof queryBus.execute>
-    const controller = new UserController({} as CommandBus, queryBus)
+    const controller = new PatientController({} as CommandBus, queryBus)
 
     const testCases = [
       {
         description: 'should call query bus with GetUsersMain query',
-        expected: new GetUsersMain()
+        expected: new GetPatientsMain()
       }
     ]
     test.each(testCases)('$description', async ({ expected }) => {
-      await controller.getUsersMain()
+      await controller.getPatientsMain()
       expect(queryBus.execute).toHaveBeenCalledWith(expected)
     })
   })
 
-  describe('getUserByIdMain', () => {
+  describe('getPatientByIdMain', () => {
     const queryBus = new QueryBus({} as ModuleRef)
     queryBus.execute = jest.fn() as unknown as jest.Mocked<typeof queryBus.execute>
-    const controller = new UserController({} as CommandBus, queryBus)
+    const controller = new PatientController({} as CommandBus, queryBus)
 
     const testCases = [
       {
         description: 'should call query bus with GetUserByIdMain query',
         id: '1',
-        expected: new GetUserByIdMain('1')
+        expected: new GetPatientByIdMain('1')
       },
       {
         description: 'should throw a validation error',
@@ -76,7 +76,7 @@ describe('UserController', () => {
     ]
     test.each(testCases)('$description', async ({ id, expected, expectedError }) => {
       try {
-        await controller.getUserByIdMain(id)
+        await controller.getPatientByIdMain(id)
         expect(queryBus.execute).toHaveBeenCalledWith(expected)
 
         if (expectedError) {

@@ -1,22 +1,22 @@
 import { jest } from '@jest/globals'
-import { UserAggregate } from './patient.aggregate.js'
-import { CreateUserCommand } from './commands/OnboardPatientCommand.js'
+import { PatientAggregate } from './patient.aggregate.js'
+import { OnboardPatientCommand } from './commands/OnboardPatientCommand.js'
 
-describe('UserAggregate', () => {
+describe('PatientAggregate', () => {
   describe('toJson', () => {
     const testCases = [
       {
         description: 'should return a js Object',
         getAggregate: () => {
-          const aggregate = new UserAggregate()
-          aggregate.create(new CreateUserCommand({ name: 'John Doe' }))
+          const aggregate = new PatientAggregate()
+          aggregate.onboardPatient(new OnboardPatientCommand({ name: 'John Doe' }))
           return aggregate
         },
         expected: { name: 'John Doe' }
       },
       {
         description: 'should return a js Object',
-        getAggregate: () => new UserAggregate(),
+        getAggregate: () => new PatientAggregate(),
         expectedError: 'Aggregate is empty'
       }
     ]
@@ -39,11 +39,11 @@ describe('UserAggregate', () => {
     })
   })
 
-  describe('create', () => {
-    let aggregate: UserAggregate
+  describe('onboardPatient', () => {
+    let aggregate: PatientAggregate
 
     beforeEach(() => {
-      aggregate = new UserAggregate()
+      aggregate = new PatientAggregate()
       aggregate.apply = jest.fn()
     })
 
@@ -60,7 +60,7 @@ describe('UserAggregate', () => {
       }
     ]
     test.each(testCases)('$description', ({ payload, expected }) => {
-      const result = aggregate.create(new CreateUserCommand(payload))
+      const result = aggregate.onboardPatient(new OnboardPatientCommand(payload))
 
       expect(aggregate.apply).toHaveBeenCalledTimes(1)
       expect(result[0].toJson().name).toEqual(expected.name)

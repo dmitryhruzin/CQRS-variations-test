@@ -1,17 +1,18 @@
 import { jest } from '@jest/globals'
-import { GetUsersMainQueryHandler } from './GetPatientsMainQueryHandler.js'
-import { UserMainRepository } from '../projections/patient-main.repository.js'
+import { GetPatientsMainQueryHandler } from './GetPatientsMainQueryHandler.js'
+import { PatientMainRepository } from '../projections/patient-main.repository.js'
 import knex from 'knex'
+import { Logger } from '@CQRS-variations-test/logger'
 
-describe('GetUsersMainQueryHandler', () => {
+describe('GetPatientsMainQueryHandler', () => {
   describe('execute', () => {
-    let repository: UserMainRepository
-    let handler: GetUsersMainQueryHandler
+    let repository: PatientMainRepository
+    let handler: GetPatientsMainQueryHandler
 
     beforeEach(() => {
-      repository = new UserMainRepository({} as knex.Knex)
+      repository = new PatientMainRepository({} as knex.Knex, {} as Logger)
       repository.getAll = jest.fn() as jest.Mocked<typeof repository.getAll>
-      handler = new GetUsersMainQueryHandler(repository)
+      handler = new GetPatientsMainQueryHandler(repository)
     })
 
     const testCases = [
