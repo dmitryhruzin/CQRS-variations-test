@@ -31,7 +31,19 @@ export class AggregateSnapshotRepository {
       .where({ aggregateId: id })
       .orderBy('aggregateVersion', 'desc')
       .first()
-    return snapshot ? { ...snapshot, state: JSON.parse(snapshot.state) } : null
+
+    if (!snapshot) {
+      return null
+    }
+
+    if (typeof snapshot?.state === 'object') {
+      return snapshot
+    }
+
+    return {
+      ...snapshot,
+      state: JSON.parse(snapshot.state)
+    }
   }
 
   async saveSnapshot(aggregate: Aggregate): Promise<boolean> {
