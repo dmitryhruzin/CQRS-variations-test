@@ -5,10 +5,10 @@ import { UserCreatedV1, UserNameUpdatedV1 } from './events/index.js'
 import { CreateUserCommand, UpdateUserNameCommand } from './commands/index.js'
 
 /**
- * Aggregate root for managing user state and events.
+ * Represents the UserAggregate, managing user state and behavior.
  *
  * @class UserAggregate
- * @extends {AggregateRoot}
+ * @extends {Aggregate}
  */
 export class UserAggregate extends Aggregate {
   private name: string
@@ -24,16 +24,14 @@ export class UserAggregate extends Aggregate {
   }
 
   /**
-   * Creates a new user aggregate.
+   * Creates a new user aggregate.  Applies the UserCreatedV1 event to initialize the user.
    *
-   * @param {UserWithOptionalId} user - The user data.
-   * @returns {UserCreatedV1[]} Array of events applied.
-   *
-   * This method initializes a new user aggregate and applies the UserCreatedV1 event.
+   * @param {CreateUserCommand} user - The command containing the user data for creation.
+   * @returns {Event[]} An array containing the UserCreatedV1 event that was applied.
    */
-  create(user: CreateUserCommand) {
+  create(command: CreateUserCommand) {
     this.id = v4()
-    this.name = user.name
+    this.name = command.name
 
     this.version += 1
 
@@ -49,6 +47,12 @@ export class UserAggregate extends Aggregate {
     return [event]
   }
 
+  /**
+   * Updates the name of the user. Applies the UserNameUpdatedV1 event.
+   *
+   * @param {UpdateUserNameCommand} command - The command containing the user ID and new name.
+   * @returns {Event[]} An array containing the UserNameUpdatedV1 event that was applied.
+   */
   updateName(command: UpdateUserNameCommand) {
     this.version += 1
 
@@ -69,10 +73,10 @@ export class UserAggregate extends Aggregate {
   /**
    * Converts the aggregate to a JSON representation.
    *
-   * @returns {User} The user data in JSON format.
-   * @throws {Error} If the aggregate is empty.
+   * @returns {AggregateUserData} The user data in JSON format, including id, name, and version.
+   * @throws {Error} If the aggregate is empty or not properly initialized.
    *
-   * This method serializes the user aggregate into a JSON object.
+   * This method serializes the user aggregate into a JSON object suitable for storage or transmission.
    */
   toJson(): AggregateUserData {
     if (!this.id) {

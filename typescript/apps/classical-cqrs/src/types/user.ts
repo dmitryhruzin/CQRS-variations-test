@@ -1,4 +1,4 @@
-import { EventBasePayload } from './common.js'
+import { AggregateMetadata, EventBasePayload } from './common.js'
 
 /**
  * Type representing a user.
@@ -30,6 +30,8 @@ export type UserMain = {
   id: string
   name: string
 }
+
+export type AggregateUserData = AggregateMetadata & User
 
 /**
  * Type representing a user with an optional ID.
