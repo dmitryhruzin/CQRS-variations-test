@@ -1,36 +1,19 @@
 import { Injectable } from '@nestjs/common'
-import knex from 'knex'
-import { InjectConnection } from 'nest-knexjs'
-import { Event } from '../types/common.js'
+import { Event, StoredEvent } from '../types/common.js'
 import { PatientAggregate } from './patient.aggregate.js'
+import { PatientOnboardedV1, SurgeryAddedV1 } from './events/index.js'
 import { EventStoreRepository } from '../event-store-module/event-store.repository.js'
+import { AggregateSnapshotRepository } from '../aggregate-module/aggregate-snapshot.repository.js'
+import { PatientOnboardedV1EventPayload, SurgeryAddedV1EventPayload } from '../types/patient.js'
 
-/**
- * Repository for managing patient aggregates.
- *
- * @class PatientRepository
- */
 @Injectable()
 export class PatientRepository {
-  private tableName: string = 'aggregate-patients'
-
   private cache: { [key: string]: PatientAggregate } = {}
 
   constructor(
     private readonly eventStore: EventStoreRepository,
-    @InjectConnection() private readonly knexConnection: knex.Knex
+    private readonly snapshotRepository: AggregateSnapshotRepository
   ) {}
-
-  async onModuleInit() {
-    if (!(await this.knexConnection.schema.hasTable(this.tableName))) {
-      await this.knexConnection.schema.createTable(this.tableName, (table) => {
-        table.string('id').primary()
-        table.integer('version')
-        table.string('name')
-        table.jsonb('medicalHistory')
-      })
-    }
-  }
 
   async buildAggregate(id?: string): Promise<PatientAggregate> {
     if (!id) {
@@ -38,33 +21,70 @@ export class PatientRepository {
     }
 
     if (this.cache[id]) {
-      return this.cache[id]
+      const agg = this.cache[id]
+
+      const events = await this.eventStore.getEventsByAggregateId(id, agg.version || 0)
+
+      const aggregate: PatientAggregate = events.reduce(this.replayEvent, agg)
+
+      this.cache[id] = aggregate
+
+      return aggregate
     }
 
-    const data = await this.knexConnection.table(this.tableName).where({ id }).first()
-    const aggregate = new PatientAggregate(data)
+    const snapshot = await this.snapshotRepository.getLatestSnapshotByAggregateId<PatientAggregate>(id)
+
+    const events = await this.eventStore.getEventsByAggregateId(id, snapshot?.aggregateVersion || 0)
+
+    const aggregate: PatientAggregate = events.reduce(this.replayEvent, new PatientAggregate(snapshot))
 
     this.cache[id] = aggregate
 
     return aggregate
   }
 
+  replayEvent(agg: PatientAggregate, event: StoredEvent) {
+    const eventPayload = {
+      ...event.body,
+      aggregateId: agg.id,
+      aggregateVersion: event.aggregateVersion
+    }
+    if (event.name === 'PatientOnboarded') {
+      if (event.version === 1) {
+        agg.replayPatientOnboardedV1(new PatientOnboardedV1(eventPayload as PatientOnboardedV1EventPayload))
+      } else {
+        throw new Error(`PatientOnboarded replay. Unprocesible event version ${event.version}`)
+      }
+    } else if (event.name === 'SurgeryAdded') {
+      if (event.version === 1) {
+        agg.replaySurgeryAddedV1(new SurgeryAddedV1(eventPayload as SurgeryAddedV1EventPayload))
+      } else {
+        throw new Error(`SurgeryAdded replay. Unprocesible event version ${event.version}`)
+      }
+    } else {
+      throw new Error(`Patient aggregate replay. Unprocesible event ${event.name}`)
+    }
+    return agg
+  }
+
   async save(aggregate: PatientAggregate, events: Event[]): Promise<boolean> {
     const aggregateId = aggregate.toJson().id
 
-    const trx = await this.knexConnection.transaction()
-    try {
-      await this.eventStore.saveEvents(aggregateId, events, trx)
+    await this.eventStore.saveEvents(aggregateId, events)
 
-      const data = aggregate.toJson()
-      await trx(this.tableName)
-        .insert({ ...data, medicalHistory: JSON.stringify(data.medicalHistory) })
-        .onConflict('id')
-        .merge()
-      await trx.commit()
-    } catch (e) {
-      await trx.rollback()
-      throw new Error(`Can not save events. ${e}`)
+    if ((aggregate.version + events.length) % 50 === 0) {
+      const lastAggregate = events.reduce(
+        (agg, e) =>
+          this.replayEvent(aggregate, {
+            body: e,
+            aggregateId,
+            aggregateVersion: agg.version,
+            version: e.version,
+            name: Object.getPrototypeOf(e.constructor).name
+          }),
+        aggregate
+      )
+      this.snapshotRepository.saveSnapshot(lastAggregate)
     }
 
     this.cache[aggregateId] = aggregate

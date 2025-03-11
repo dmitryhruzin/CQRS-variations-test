@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals'
 import { EventStoreRepository } from '../event-store-module/event-store.repository.js'
+import { AggregateSnapshotRepository } from '../aggregate-module/aggregate-snapshot.repository.js'
 import knex from 'knex'
 import { Logger } from '@CQRS-variations-test/logger'
 import { PatientRepository } from './patient.repository.js'
@@ -9,22 +10,32 @@ import { OnboardPatientCommand } from './commands/OnboardPatientCommand.js'
 describe('PatientRepository', () => {
   describe('buildAggregate', () => {
     let repository: PatientRepository
-    let db: knex.Knex = {} as knex.Knex
+    let eventStore: EventStoreRepository
+    let snapshotRepository: AggregateSnapshotRepository
 
     beforeEach(() => {
-      db.table = jest
+      eventStore = new EventStoreRepository({} as knex.Knex, {} as Logger)
+      eventStore.getEventsByAggregateId = jest
         .fn()
-        .mockImplementation(() => ({ where: () => ({ first: () => ({ id: '1', name: 'John', version: 2 })})})) as jest.Mocked<
-        typeof db.table
-      >
-      repository = new PatientRepository({} as EventStoreRepository, db)
+        .mockImplementation(() => [
+          { name: 'SurgeryAdded', aggregateVersion: 2, version: 1, body: { Label: 'Knee Replacement', doctorName: 'Dr. Smith' } },
+          { name: 'PatientOnboarded', aggregateVersion: 1, version: 1, body: { name: 'John Doe' } },
+        ]) as jest.Mocked<typeof eventStore.getEventsByAggregateId>
+      snapshotRepository = new AggregateSnapshotRepository({} as knex.Knex, {} as Logger)
+      snapshotRepository.getLatestSnapshotByAggregateId = jest.fn().mockImplementation(() => ({
+        id: '123',
+        aggregateVersion: 1,
+        aggregateId: '123',
+        state: { name: 'test', medicalHistory: [] },
+      })) as jest.Mocked<typeof snapshotRepository.getLatestSnapshotByAggregateId>
+      repository = new PatientRepository(eventStore, snapshotRepository)
     })
 
     const testCases = [
       {
-        description: 'should build an aggregate using the latest snapshot',
+        description: 'should build an aggregate using events from Event Store',
         id: '1',
-        expected: '{\"id\":\"1\",\"version\":2,\"name\":\"John\"}'
+        expected: '{\"version\":3,\"name\":\"John Doe\",\"medicalHistory\":[\"{\\\"doctorName\\\":\\\"Dr. Smith\\\"}\"]}'
       },
       {
         description: 'should return an empty aggregate is thee is no ID specified',
@@ -41,32 +52,16 @@ describe('PatientRepository', () => {
       await repository.buildAggregate('2')
       await repository.buildAggregate('2')
 
-      expect(db.table).toHaveBeenCalledTimes(1)
+      expect(snapshotRepository.getLatestSnapshotByAggregateId).toHaveBeenCalledTimes(1)
     })
   })
 
   describe('save', () => {
     const eventStore = new EventStoreRepository({} as knex.Knex, {} as Logger)
     eventStore.saveEvents = jest.fn() as jest.Mocked<typeof eventStore.saveEvents>
-    const db: knex.Knex = {} as knex.Knex
-    db.table = jest
-      .fn()
-      .mockImplementation(() => ({ insert: () => ({ onConflict: () => ({ merge: () => {} }) }) })) as jest.Mocked<
-      typeof db.table
-    >
-    db.transaction = jest.fn().mockImplementation(() => {
-      const trx = jest
-        .fn()
-        .mockImplementation(() => ({ insert: () => ({ onConflict: () => ({ merge: () => {} }) }) })) as jest.Mock & {
-        commit: jest.Mock
-        rollback: jest.Mock
-      }
-      trx.commit = jest.fn()
-      trx.rollback = jest.fn()
-
-      return trx
-    }) as jest.MockedFunction<typeof db.transaction>
-    const repository = new PatientRepository(eventStore, db)
+    const snapshotRepository = new AggregateSnapshotRepository({} as knex.Knex, {} as Logger)
+    snapshotRepository.saveSnapshot = jest.fn() as jest.Mocked<typeof snapshotRepository.saveSnapshot>
+    const repository = new PatientRepository(eventStore, snapshotRepository)
 
     const testCases = [
       {
