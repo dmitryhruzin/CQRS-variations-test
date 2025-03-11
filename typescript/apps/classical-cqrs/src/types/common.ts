@@ -54,4 +54,17 @@ export type Snapshot<T> = null | {
   state: T
 }
 
+/**
+ * Type representing aggregate metadata.
+ * @typedef {Object} AggregateMetadata
+ * @property {string} id - The ID of the aggregate.
+ * @property {number} version - The version of the aggregate.
+ *
+ * Represents metadata associated with an aggregate.
+ */
+export type AggregateMetadata = {
+  id: string
+  version: number
+}
+
 export class VersionMismatchError extends Error {}
