@@ -9,7 +9,7 @@ on:
 
 jobs:
   deploy-app:
-    uses: ./.github/workflows/workflow-call-deploy-app.yml@main
+    uses: ./.github/workflows/workflow-call-deploy-app.yml
     with:
       app_name: classical-cqrs
       docker_repository: classical-cqrs # Make sure this matches your ECR repo name
