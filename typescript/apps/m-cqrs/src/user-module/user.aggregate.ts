@@ -29,9 +29,9 @@ export class UserAggregate extends Aggregate {
    * @param {CreateUserCommand} user - The command containing the user data for creation.
    * @returns {Event[]} An array containing the UserCreatedV1 event that was applied.
    */
-  create(user: CreateUserCommand) {
+  create(command: CreateUserCommand) {
     this.id = v4()
-    this.name = user.name
+    this.name = command.name
 
     this.version += 1
 

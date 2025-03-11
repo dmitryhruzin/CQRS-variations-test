@@ -43,6 +43,19 @@ export type PatientMain = {
 }
 
 /**
+ * Type representing aggregate patient data.
+ * @typedef {Object} AggregatePatientData
+ * @property {string} id - The patient's ID.
+ * @property {string} name - The patient's name.
+ * @property {string[]} medicalHistory - The patient's medical history.
+ * @property {number} version - The aggregate version.
+ * @property {boolean} isDeleted - Indicates if the aggregate is deleted.
+ *
+ * Represents patient data combined with aggregate metadata.
+ */
+export type AggregatePatientData = Patient & AggregateMetadata
+
+/**
  * Type representing the payload for a PatientOnboardedV1 event.
  * @typedef {Object} PatientOnboardedV1EventPayload
  * @property {string} eventId - The event ID.

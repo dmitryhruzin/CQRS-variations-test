@@ -2,20 +2,21 @@ import { jest } from '@jest/globals'
 import { PatientAggregate } from './patient.aggregate.js'
 import { OnboardPatientCommand } from './commands/OnboardPatientCommand.js'
 
-describe('PatientAggregate', () => {
+describe('PatientAgregate', () => {
   describe('toJson', () => {
     const testCases = [
       {
         description: 'should return a js Object',
         getAggregate: () => {
           const aggregate = new PatientAggregate()
-          aggregate.onboardPatient(new OnboardPatientCommand({ name: 'John Doe' }))
+          const [event] = aggregate.onboardPatient(new OnboardPatientCommand({ name: 'John Doe' }))
+          aggregate.replayPatientOnboardedV1(event)
           return aggregate
         },
         expected: { name: 'John Doe' }
       },
       {
-        description: 'should return a js Object',
+        description: 'should return an error for empty aggregate',
         getAggregate: () => new PatientAggregate(),
         expectedError: 'Aggregate is empty'
       }

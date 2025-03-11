@@ -1,5 +1,5 @@
 import { v4 } from 'uuid'
-import { User } from '../types/user.js'
+import { AggregateUserData } from '../types/user.js'
 import { Aggregate } from '../aggregate-module/aggregate.js'
 import { UserCreatedV1, UserNameUpdatedV1 } from './events/index.js'
 import { CreateUserCommand, UpdateUserNameCommand } from './commands/index.js'
@@ -34,12 +34,12 @@ export class UserAggregate extends Aggregate {
    *
    * This method initializes a new user aggregate and applies the UserCreatedV1 event.
    */
-  create(user: CreateUserCommand) {
+  create(command: CreateUserCommand) {
     this.id = v4()
 
     const event = new UserCreatedV1({
       id: this.id,
-      name: user.name,
+      name: command.name,
       aggregateId: this.id,
       aggregateVersion: this.version + 1
     })
@@ -75,21 +75,14 @@ export class UserAggregate extends Aggregate {
     this.version += 1
   }
 
-  /**
-   * Converts the aggregate to a JSON representation.
-   *
-   * @returns {User} The user data in JSON format.
-   * @throws {Error} If the aggregate is empty.
-   *
-   * This method serializes the user aggregate into a JSON object.
-   */
-  toJson(): User {
+  toJson(): AggregateUserData {
     if (!this.id) {
       throw new Error('Aggregate is empty')
     }
 
     return {
       id: this.id,
+      version: this.version,
       name: this.name
     }
   }

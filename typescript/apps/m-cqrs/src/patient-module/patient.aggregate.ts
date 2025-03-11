@@ -20,9 +20,9 @@ export class PatientAggregate extends Aggregate {
     }
   }
 
-  onboardPatient(patient: OnboardPatientCommand) {
+  onboardPatient(command: OnboardPatientCommand) {
     this.id = v4()
-    this.name = patient.name
+    this.name = command.name
 
     this.version += 1
 
