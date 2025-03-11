@@ -7,6 +7,7 @@ import { EventStoreRepository } from '../../event-store-module/event-store.repos
 import { EventBus } from '@nestjs/cqrs/dist/event-bus.js'
 import { OnboardPatientCommand } from '../commands/index.js'
 import { PatientOnboardedV1 } from '../events/index.js'
+import { AggregateSnapshotRepository } from '../../aggregate-module/aggregate-snapshot.repository.js'
 
 describe('OnboardPatientCommandHandler', () => {
   describe('execute', () => {
@@ -18,7 +19,7 @@ describe('OnboardPatientCommandHandler', () => {
     let handler: OnboardPatientCommandHandler
 
     beforeEach(() => {
-      repository = new PatientRepository({} as EventStoreRepository, {} as knex.Knex)
+      repository = new PatientRepository({} as EventStoreRepository, {} as AggregateSnapshotRepository)
       repository.save = jest.fn() as jest.Mocked<typeof repository.save>
       aggregate = {
         onboardPatient: jest.fn().mockImplementation(() => events) as jest.Mocked<typeof aggregate.onboardPatient>,

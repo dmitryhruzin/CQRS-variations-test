@@ -7,6 +7,7 @@ import { EventStoreRepository } from '../../event-store-module/event-store.repos
 import { EventBus } from '@nestjs/cqrs/dist/event-bus.js'
 import { AddSurgeryCommand } from '../commands/index.js'
 import { SurgeryAddedV1 } from '../events/index.js'
+import { AggregateSnapshotRepository } from '../../aggregate-module/aggregate-snapshot.repository.js'
 
 describe('AddSurgeryCommandHandler', () => {
   describe('execute', () => {
@@ -18,7 +19,7 @@ describe('AddSurgeryCommandHandler', () => {
     let handler: AddSurgeryCommandHandler
 
     beforeEach(() => {
-      repository = new PatientRepository({} as EventStoreRepository, {} as knex.Knex)
+      repository = new PatientRepository({} as EventStoreRepository, {} as AggregateSnapshotRepository)
       repository.save = jest.fn() as jest.Mocked<typeof repository.save>
       repository.buildAggregate = jest.fn() as jest.Mocked<typeof repository.buildAggregate>
       aggregate = {
