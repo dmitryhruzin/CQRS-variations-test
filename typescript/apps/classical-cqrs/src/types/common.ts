@@ -47,6 +47,8 @@ export type StoredEvent = {
   body: { [key: string]: unknown }
 }
 
+export type StoredEventWithID = StoredEvent & { id: number }
+
 export type Snapshot<T> = null | {
   id: number
   aggregateId: string

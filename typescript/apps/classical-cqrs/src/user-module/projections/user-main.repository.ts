@@ -2,6 +2,7 @@ import knex from 'knex'
 import { Injectable } from '@nestjs/common'
 import { InjectConnection } from 'nest-knexjs'
 import { InjectLogger, Logger } from '@CQRS-variations-test/logger'
+import { EventStoreRepository } from '../../event-store-module/event-store.repository.js'
 import { User, UserUpdatePayload } from '../../types/user.js'
 import { VersionMismatchError } from '../../types/common.js'
 
@@ -16,6 +17,7 @@ export class UserMainRepository {
 
   // @ts-ignore
   constructor(
+    private readonly eventStore: EventStoreRepository,
     @InjectConnection() private readonly knexConnection: knex.Knex,
     @InjectLogger(UserMainRepository.name) private readonly logger: Logger
   ) {}
@@ -101,5 +103,52 @@ export class UserMainRepository {
     }
 
     return user
+  }
+
+  async rebuild() {
+    const eventNames = ['UserCreated', 'UserNameUpdated']
+
+    await this.knexConnection.table(this.tableName).del()
+
+    let events = await this.eventStore.getEventsByName(eventNames, 0)
+    while (events.length > 0) {
+      for (let i = 0; i < events.length; i += 1) {
+        switch (events[i].name) {
+          case 'UserCreated': {
+            const { id, name } = events[i].body as { id: string; name: string }
+            if (!id || !name) {
+              this.logger.warn(`event with id: ${events[i].id} is missing id or name`)
+              break
+            }
+            // eslint-disable-next-line no-await-in-loop
+            await this.save({ id, name })
+            break
+          }
+          case 'UserNameUpdated': {
+            const { name } = events[i].body as { name: string }
+            if (!name) {
+              this.logger.warn(`event with id: ${events[i].id} is missing name`)
+              break
+            }
+            // eslint-disable-next-line no-await-in-loop
+            await this.update(events[i].aggregateId, {
+              name,
+              version: events[i].aggregateVersion
+            })
+            break
+          }
+          default: {
+            break
+          }
+        }
+      }
+      this.logger.info(`Applied events from ${events[0].id} to ${events[events.length - 1].id}`)
+
+      // eslint-disable-next-line no-await-in-loop
+      events = await this.eventStore.getEventsByName(eventNames, events[events.length - 1].id)
+    }
+
+    this.logger.info('Rebuild projection finished')
+    return 0
   }
 }

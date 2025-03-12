@@ -11,6 +11,7 @@ import { AggregateMetadata, EventBasePayload } from './common.js'
 export type User = {
   id: string
   name: string
+  version?: number
 }
 
 export type UserUpdatePayload = {

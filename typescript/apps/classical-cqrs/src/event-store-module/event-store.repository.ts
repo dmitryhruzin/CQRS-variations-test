@@ -2,7 +2,7 @@ import knex from 'knex'
 import { Injectable } from '@nestjs/common'
 import { InjectConnection } from 'nest-knexjs'
 import { InjectLogger, Logger } from '@CQRS-variations-test/logger'
-import { Event, StoredEvent } from '../types/common.js'
+import { Event, StoredEvent, StoredEventWithID } from '../types/common.js'
 
 /**
  * Repository for managing event store operations.
@@ -94,5 +94,14 @@ export class EventStoreRepository {
     this.logger.info({ message: 'saveEvents result:', body: result })
 
     return true
+  }
+
+  async getEventsByName(names: string[], fromID: number): Promise<StoredEventWithID[]> {
+    return this.knexConnection
+      .from(this.tableName)
+      .whereIn('name', names)
+      .andWhere('id', '>', fromID)
+      .orderBy('id', 'asc')
+      .limit(100)
   }
 }
