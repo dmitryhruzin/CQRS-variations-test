@@ -102,4 +102,34 @@ export class UserMainRepository {
 
     return user
   }
+
+  async rebuild() {
+    const aggregateTable = 'aggregate-users'
+
+    await this.knexConnection.table(this.tableName).del()
+
+    let users = await this.knexConnection.table(aggregateTable).orderBy('id', 'asc').limit(100)
+
+    while (users.length > 0) {
+      // eslint-disable-next-line no-await-in-loop
+      await this.knexConnection.table(this.tableName).insert(
+        users.map((u) => ({
+          id: u.id,
+          name: u.name,
+          version: u.version
+        }))
+      )
+
+      this.logger.info(`Applied users from ${users[0].id} to ${users[users.length - 1].id}`)
+
+      // eslint-disable-next-line no-await-in-loop
+      users = await this.knexConnection
+        .table(aggregateTable)
+        .where('id', '>', users[users.length - 1].id)
+        .orderBy('id', 'asc')
+        .limit(100)
+    }
+
+    this.logger.info('Rebuild projection finished!')
+  }
 }

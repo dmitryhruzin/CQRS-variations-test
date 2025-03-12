@@ -2,7 +2,9 @@
 /* eslint-disable no-await-in-loop */
 const axios = require('axios')
 
-const BASE_URL = 'http://localhost:8000' // 'http://m-sqrs.eba-intpqewv.eu-central-1.elasticbeanstalk.com'
+// const BASE_URL = 'http://localhost:8000'
+const BASE_URL = 'http://classical-cqrs.eba-intpqewv.eu-central-1.elasticbeanstalk.com'
+// const BASE_URL = 'http://m-sqrs.eba-intpqewv.eu-central-1.elasticbeanstalk.com'
 
 /**
  * Calculates the average of an array of numbers.
@@ -127,6 +129,7 @@ async function testUpdateEndpoint() {
     const responseTimes = []
 
     const ids = classicalIDs
+    // const ids = mIDs
 
     for (let j = 0; j < 33; j += 1) {
       for (let i = 0; i < ids.length; i += 1) {
@@ -199,6 +202,6 @@ async function testFetchEndpoint() {
   }
 }
 
-testCreateEndpoint()
-// testUpdateEndpoint()
+// testCreateEndpoint()
+testUpdateEndpoint()
 // testFetchEndpoint()
