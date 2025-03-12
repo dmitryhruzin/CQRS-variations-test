@@ -15,6 +15,8 @@ import { VersionMismatchError } from '../../types/common.js'
 export class UserMainRepository {
   private tableName: string = 'users'
 
+  private snapshotTableName: string = `${this.tableName}-snapshot`
+
   // @ts-ignore
   constructor(
     private readonly eventStore: EventStoreRepository,
@@ -31,6 +33,12 @@ export class UserMainRepository {
         table.string('id').primary()
         table.string('name')
         table.integer('version')
+      })
+      await this.knexConnection.schema.createTable(this.snapshotTableName, (table) => {
+        table.string('id').primary()
+        table.string('name')
+        table.integer('version')
+        table.integer('lastEventID')
       })
     }
   }
@@ -105,12 +113,63 @@ export class UserMainRepository {
     return user
   }
 
+  async createSnapshot(lastEventID: number = 0) {
+    await this.knexConnection.table(this.snapshotTableName).del()
+
+    let users = await this.knexConnection.table(this.tableName).orderBy('id', 'asc').limit(100)
+
+    while (users.length > 0) {
+      // eslint-disable-next-line no-await-in-loop
+      await this.knexConnection.table(this.snapshotTableName).insert(users.map((u) => ({ ...u, lastEventID })))
+
+      this.logger.info(`Copied records from ${users[0].id} to ${users[users.length - 1].id}`)
+
+      // eslint-disable-next-line no-await-in-loop
+      users = await this.knexConnection
+        .table(this.tableName)
+        .where('id', '>', users[users.length - 1].id)
+        .orderBy('id', 'asc')
+        .limit(100)
+    }
+
+    this.logger.info('Snapshot created!')
+  }
+
+  async applySnepshot(): Promise<number> {
+    await this.knexConnection.table(this.tableName).del()
+
+    let users = await this.knexConnection.table(this.snapshotTableName).orderBy('id', 'asc').limit(100)
+
+    const lastEventID = users.length ? users[users.length - 1].lastEventID : 0
+
+    while (users.length > 0) {
+      // eslint-disable-next-line no-await-in-loop
+      await this.knexConnection.table(this.tableName).insert(
+        users.map((u) => {
+          const { lastEventID: omitted, ...user } = u
+          return user
+        })
+      )
+
+      this.logger.info(`Copied records from ${users[0].id} to ${users[users.length - 1].id}`)
+
+      // eslint-disable-next-line no-await-in-loop
+      users = await this.knexConnection
+        .table(this.snapshotTableName)
+        .where('id', '>', users[users.length - 1].id)
+        .orderBy('id', 'asc')
+        .limit(100)
+    }
+
+    this.logger.info('Snapshot applied!')
+    return lastEventID
+  }
+
   async rebuild() {
     const eventNames = ['UserCreated', 'UserNameUpdated']
 
-    await this.knexConnection.table(this.tableName).del()
-
-    let events = await this.eventStore.getEventsByName(eventNames, 0)
+    let lastEventID = await this.applySnepshot()
+    let events = await this.eventStore.getEventsByName(eventNames, lastEventID)
     while (events.length > 0) {
       for (let i = 0; i < events.length; i += 1) {
         switch (events[i].name) {
@@ -142,13 +201,16 @@ export class UserMainRepository {
           }
         }
       }
-      this.logger.info(`Applied events from ${events[0].id} to ${events[events.length - 1].id}`)
+      lastEventID = events[events.length - 1].id
+      this.logger.info(`Applied events from ${events[0].id} to ${lastEventID}`)
 
       // eslint-disable-next-line no-await-in-loop
-      events = await this.eventStore.getEventsByName(eventNames, events[events.length - 1].id)
+      events = await this.eventStore.getEventsByName(eventNames, lastEventID)
     }
 
-    this.logger.info('Rebuild projection finished')
+    await this.createSnapshot(lastEventID)
+
+    this.logger.info('Rebuild projection finished!')
     return 0
   }
 }

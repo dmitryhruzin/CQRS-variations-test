@@ -120,7 +120,7 @@ export class UserMainRepository {
         }))
       )
 
-      this.logger.info(`Applied events from ${users[0].id} to ${users[users.length - 1].id}`)
+      this.logger.info(`Applied users from ${users[0].id} to ${users[users.length - 1].id}`)
 
       // eslint-disable-next-line no-await-in-loop
       users = await this.knexConnection
@@ -130,7 +130,6 @@ export class UserMainRepository {
         .limit(100)
     }
 
-    this.logger.info('Rebuild projection finished')
-    return 0
+    this.logger.info('Rebuild projection finished!')
   }
 }
