@@ -52,12 +52,11 @@ export class AggregateSnapshotRepository {
       return false
     }
 
-    const result = await this.knexConnection.table(this.tableName).insert({
+    await this.knexConnection.table(this.tableName).insert({
       aggregateId: aggregate.id,
       aggregateVersion: aggregate.version,
       state: aggregate.toJson()
     })
-    this.logger.info({ message: 'saveEvents result:', body: result })
 
     return true
   }
