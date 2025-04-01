@@ -103,10 +103,12 @@ export class PatientRepository {
         .onConflict('id')
         .merge()
 
-      await trx(this.medicalHistoryTableName)
-        .insert(medicalHistory.map((mh) => ({ ...mh, aggregateId, date: new Date() })))
-        .onConflict('id')
-        .ignore()
+      if (medicalHistory.length) {
+        await trx(this.medicalHistoryTableName)
+          .insert(medicalHistory.map((mh) => ({ ...mh, aggregateId, date: new Date() })))
+          .onConflict('id')
+          .ignore()
+      }
 
       await trx.commit()
     } catch (e) {
