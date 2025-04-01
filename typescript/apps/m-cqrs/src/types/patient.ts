@@ -12,7 +12,7 @@ import { EventBasePayload, AggregateMetadata } from './common.js'
 export type Patient = {
   id: string
   name: string
-  medicalHistory: string[]
+  medicalHistory: MedicalHistoryItem[]
 }
 
 /**
@@ -96,8 +96,14 @@ export type OnboardPatientRequest = {
 }
 
 export type Surgery = {
+  id: string
   label: string
   doctorName: string
+}
+
+export type MedicalHistoryItem = {
+  patientId: string
+  surgery: Surgery
 }
 
 /**
@@ -110,7 +116,4 @@ export type Surgery = {
  *
  * Represents the request to add a surgery.
  */
-export type AddSurgeryRequest = {
-  patientId: string
-  surgery: Surgery
-}
+export type AddSurgeryRequest = MedicalHistoryItem

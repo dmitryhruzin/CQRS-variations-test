@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals'
 import { GetUsersMainQueryHandler } from './GetUsersMainQueryHandler.js'
 import { UserMainRepository } from '../projections/user-main.repository.js'
+import { EventStoreRepository } from '../../event-store-module/event-store.repository.js'
 import knex from 'knex'
 import { Logger } from '@CQRS-variations-test/logger'
 
@@ -10,7 +11,7 @@ describe('GetUsersMainQueryHandler', () => {
     let handler: GetUsersMainQueryHandler
 
     beforeEach(() => {
-      repository = new UserMainRepository({} as knex.Knex, {} as Logger)
+      repository = new UserMainRepository({} as EventStoreRepository, {} as knex.Knex, {} as Logger)
       repository.getAll = jest.fn() as jest.Mocked<typeof repository.getAll>
       handler = new GetUsersMainQueryHandler(repository)
     })

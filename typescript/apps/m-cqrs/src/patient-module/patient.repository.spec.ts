@@ -12,11 +12,11 @@ describe('PatientRepository', () => {
     let db: knex.Knex = {} as knex.Knex
 
     beforeEach(() => {
-      db.table = jest
+      db.raw = jest
         .fn()
-        .mockImplementation(() => ({ where: () => ({ first: () => ({ id: '1', name: 'John', version: 2 })})})) as jest.Mocked<
-        typeof db.table
-      >
+        .mockImplementation(() => ({ rows: [{ id: '1', name: 'John', version: 2 }] })) as jest.Mocked<
+          typeof db.raw
+        >
       repository = new PatientRepository({} as EventStoreRepository, db)
     })
 
@@ -41,7 +41,7 @@ describe('PatientRepository', () => {
       await repository.buildAggregate('2')
       await repository.buildAggregate('2')
 
-      expect(db.table).toHaveBeenCalledTimes(1)
+      expect(db.raw).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -57,7 +57,7 @@ describe('PatientRepository', () => {
     db.transaction = jest.fn().mockImplementation(() => {
       const trx = jest
         .fn()
-        .mockImplementation(() => ({ insert: () => ({ onConflict: () => ({ merge: () => {} }) }) })) as jest.Mock & {
+        .mockImplementation(() => ({ insert: () => ({ onConflict: () => ({ merge: () => {}, ignore: () => {} }) }) })) as jest.Mock & {
         commit: jest.Mock
         rollback: jest.Mock
       }
