@@ -10,7 +10,7 @@ import { SurgeryAddedV1 } from '../events/index.js'
 
 describe('AddSurgeryCommandHandler', () => {
   describe('execute', () => {
-    const events = [new SurgeryAddedV1({ aggregateId: '123', aggregateVersion: 1, label: 'Knee Replacement', doctorName: 'Dr John Doe' })]
+    const events = [new SurgeryAddedV1({ id: '1231', aggregateId: '123', aggregateVersion: 1, label: 'Knee Replacement', doctorName: 'Dr John Doe' })]
 
     let repository: PatientRepository
     let aggregate: { addSurgery: (command: AddSurgeryCommand) => Event[]; commit: () => {} }
@@ -35,7 +35,7 @@ describe('AddSurgeryCommandHandler', () => {
     const testCases = [
       {
         description: 'should update aggregate, save and commit events',
-        payload: new AddSurgeryCommand({ patientId: '1234', surgery: { label: 'Knee Replacement', doctorName: 'Dr. John Doe' } }),
+        payload: new AddSurgeryCommand({ patientId: '1234', surgery: { id: '1231', label: 'Knee Replacement', doctorName: 'Dr. John Doe' } }),
         expected: events
       }
     ]

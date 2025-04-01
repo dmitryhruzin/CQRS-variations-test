@@ -1,5 +1,5 @@
 import { v4 } from 'uuid'
-import { AggregatePatientData } from '../types/patient.js'
+import { AggregatePatientData, MedicalHistoryItem } from '../types/patient.js'
 import { Aggregate } from '../aggregate-module/aggregate.js'
 import { PatientOnboardedV1, SurgeryAddedV1 } from './events/index.js'
 import { OnboardPatientCommand, AddSurgeryCommand } from './commands/index.js'
@@ -7,7 +7,7 @@ import { OnboardPatientCommand, AddSurgeryCommand } from './commands/index.js'
 export class PatientAggregate extends Aggregate {
   private name: string
 
-  private medicalHistory: string[] = []
+  private medicalHistory: MedicalHistoryItem[] = []
 
   constructor(data: AggregatePatientData | null = null) {
     if (!data) {
@@ -41,14 +41,14 @@ export class PatientAggregate extends Aggregate {
   addSurgery(command: AddSurgeryCommand) {
     this.version += 1
 
+    const surgery = { ...command.surgery, id: v4() }
     const event = new SurgeryAddedV1({
-      label: command.surgery.label,
-      doctorName: command.surgery.doctorName,
+      ...surgery,
       aggregateId: this.id,
       aggregateVersion: this.version
     })
 
-    this.medicalHistory.push(JSON.stringify(command.surgery))
+    this.medicalHistory.push(surgery as unknown as MedicalHistoryItem)
 
     this.apply(event)
 
