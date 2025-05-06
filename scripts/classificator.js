@@ -33,36 +33,30 @@ const getClassValue = (value, xAxis) => {
 //   console.log(`${i}:`, getClassValue(i))
 // }
 
-const calculateComplexity = (cyclomatic, cognitive) => {
+const calculateComplexity = (cyclomaticSource, cognitiveSource) => {
   console.log('\n McCabe complexity')
 
-  const classicalCQRSMcCabe = cyclomatic.map((m) => ({
+  const cyclomatic = cyclomaticSource.map((m) => ({
     ...m,
-    complexity: getClassValue(m.complexity, cyclomaticMaxValue).reduce(
-      (res, c) => res + (c.class.value * c.part) / 100,
-      0
-    )
+    complexity: getClassValue(m.complexity, cyclomaticMaxValue).reduce((res, c) => res + c.class.value * c.part, 0) / 100
   }))
-  const classicalCQRSMcCabeTotal = classicalCQRSMcCabe.reduce((res, m) => res + m.complexity, 0)
+  const cyclomaticTotal = cyclomatic.reduce((res, m) => res + m.complexity, 0).toFixed(2)
 
-  // console.log('By activities', classicalCQRSMcCabe)
-  console.log('Total', classicalCQRSMcCabeTotal)
+  console.log('By activities', cyclomatic)
+  console.log('Total', cyclomaticTotal)
 
   console.log('\n Cognitive functional complexity')
 
-  const classicalCQRSCognitive = cognitive.map((m) => ({
+  const сognitive = cognitiveSource.map((m) => ({
     ...m,
-    complexity: getClassValue(m.complexity, cognitiveMaxValue).reduce(
-      (res, c) => res + (c.class.value * c.part) / 100,
-      0
-    )
+    complexity: getClassValue(m.complexity, cognitiveMaxValue).reduce((res, c) => res + c.class.value * c.part, 0) / 100
   }))
-  const classicalCQRSCognitiveTotal = classicalCQRSCognitive.reduce((res, m) => res + m.complexity, 0)
+  const сognitiveTotal = сognitive.reduce((res, m) => res + m.complexity, 0).toFixed(2)
 
-  // console.log('By activities', classicalCQRSCognitive)
-  console.log('Total', classicalCQRSCognitiveTotal)
+  console.log('By activities', сognitive)
+  console.log('Total', сognitiveTotal)
 
-  console.log('\n Total complexity', 0.5 * classicalCQRSCognitiveTotal + 0.5 * classicalCQRSMcCabeTotal)
+  console.log('\n Total complexity', (0.5 * сognitiveTotal + 0.5 * cyclomaticTotal).toFixed(2))
 }
 
 // ========== Implementation =========
