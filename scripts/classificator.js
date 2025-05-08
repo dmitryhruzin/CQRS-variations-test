@@ -1,29 +1,54 @@
 const classes = [
-  { name: 'very simple', value: 2 },
-  { name: 'simple', value: 4 },
-  { name: 'average', value: 6 },
-  { name: 'complex', value: 8 },
-  { name: 'very complex', value: 12 }
+  { name: 'very simple', value: 4 },
+  { name: 'simple', value: 6 },
+  { name: 'average', value: 8 },
+  { name: 'complex', value: 12 },
+  { name: 'very complex', value: 16 }
 ]
 
 const cyclomaticMaxValue = 25
 const cognitiveMaxValue = 22
 
+const integrate = (func, a, b, n = 1000) => {
+  const h = (b - a) / n
+  let sum = 0.5 * (func(a) + func(b))
+
+  for (let i = 1; i < n; i += 1) {
+    sum += func(a + i * h)
+  }
+
+  return sum * h
+}
+
 const getClassValue = (value, xAxis) => {
   const chunksCount = classes.length * 2 - 1
   const chunk = xAxis / chunksCount
 
-  for (let i = 0; i < chunksCount; i += 1) {
-    if (value <= chunk * (i + 1)) {
-      if (i % 2) {
-        const percentOfRightClass = Math.round(((value - chunk * i) * 100) / chunk)
-        const percentOfLeftClass = 100 - percentOfRightClass
-        return [
-          { part: percentOfLeftClass, class: classes[Math.round(i / 2) - 1] },
-          { part: percentOfRightClass, class: classes[Math.round(i / 2)] }
-        ].filter((c) => c.part)
-      }
-      return [{ part: 100, class: classes[i / 2] }]
+  for (let i = 0; i < classes.length; i += 1) {
+    if (2 * i * chunk <= value && value <= (2 * i + 1) * chunk) {
+      return classes[i].value
+    }
+    if ((2 * i + 1) * chunk < value && value < (2 * i + 2) * chunk && i < classes.length - 1) {
+      // return [
+      //   { part: Math.round(((value - (2 * i + 1) * chunk) / chunk) * 100), class: classes[i + 1] },
+      //   { part: Math.round((((2 * i + 2) * chunk - value) / chunk) * 100), class: classes[i] }
+      // ]
+      return (
+        [
+          {
+            part: Math.round(
+              Math.sqrt(integrate((x) => 1 - x / chunk, value - (2 * i + 1) * chunk, chunk) / (chunk / 2)) * 100
+            ),
+            class: classes[i]
+          },
+          {
+            part: Math.round(
+              Math.sqrt(integrate((x) => x / chunk, 0, value - (2 * i + 1) * chunk) / (chunk / 2)) * 100
+            ),
+            class: classes[i + 1]
+          }
+        ].reduce((res, c) => res + c.class.value * c.part, 0) / 100
+      )
     }
   }
   throw new Error(`Value ${value} is higher than ${xAxis}`)
@@ -38,7 +63,7 @@ const calculateComplexity = (cyclomaticSource, cognitiveSource) => {
 
   const cyclomatic = cyclomaticSource.map((m) => ({
     ...m,
-    complexity: getClassValue(m.complexity, cyclomaticMaxValue).reduce((res, c) => res + c.class.value * c.part, 0) / 100
+    complexity: getClassValue(m.complexity, cyclomaticMaxValue)
   }))
   const cyclomaticTotal = cyclomatic.reduce((res, m) => res + m.complexity, 0).toFixed(2)
 
@@ -49,7 +74,7 @@ const calculateComplexity = (cyclomaticSource, cognitiveSource) => {
 
   const сognitive = cognitiveSource.map((m) => ({
     ...m,
-    complexity: getClassValue(m.complexity, cognitiveMaxValue).reduce((res, c) => res + c.class.value * c.part, 0) / 100
+    complexity: getClassValue(m.complexity, cognitiveMaxValue)
   }))
   const сognitiveTotal = сognitive.reduce((res, m) => res + m.complexity, 0).toFixed(2)
 
@@ -129,7 +154,7 @@ calculateComplexity(
     { activityName: 'Validate query', complexity: 13.5 },
     { activityName: 'Fetch projection from DB', complexity: 25 },
     { activityName: 'Map projection to DTO', complexity: 2 },
-    { activityName: `Return DTO`, complexity: 13.5 }
+    { activityName: `Return DTO`, complexity: 2 }
   ],
   [
     { activityName: 'Create query', complexity: 2 },
@@ -147,7 +172,7 @@ calculateComplexity(
     { activityName: 'Validate query', complexity: 13.5 },
     { activityName: 'Fetch projection from DB', complexity: 18 },
     { activityName: 'Map projection to DTO', complexity: 2 },
-    { activityName: `Return DTO`, complexity: 13.5 }
+    { activityName: `Return DTO`, complexity: 2 }
   ],
   [
     { activityName: 'Create query', complexity: 2 },
