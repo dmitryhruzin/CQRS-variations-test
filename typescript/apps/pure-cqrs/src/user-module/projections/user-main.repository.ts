@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common'
 import { InjectConnection } from 'nest-knexjs'
 import { InjectLogger, Logger } from '@CQRS-variations-test/logger'
 import { User, UserUpdatePayload } from '../../types/user.js'
+import { VersionMismatchError } from '../../types/common.js'
 
 /**
  * Repository for managing main user data.
@@ -11,12 +12,13 @@ import { User, UserUpdatePayload } from '../../types/user.js'
  */
 @Injectable()
 export class UserMainRepository {
-  constructor(
-    @InjectConnection() readonly knexConnection: knex.Knex,
-    @InjectLogger(UserMainRepository.name) readonly logger: Logger
-  ) {}
+  private tableName: string = 'users'
 
-  private tableName = 'users'
+  // @ts-ignore
+  constructor(
+    @InjectConnection() private readonly knexConnection: knex.Knex,
+    @InjectLogger(UserMainRepository.name) private readonly logger: Logger
+  ) {}
 
   /**
    * Initializes the module by creating the users table if it doesn't exist.
@@ -43,13 +45,36 @@ export class UserMainRepository {
     return true
   }
 
-  async update(id: string, payload: UserUpdatePayload): Promise<boolean> {
-    await this.knexConnection
-      .table(this.tableName)
-      .update({ ...payload })
-      .where({ id })
+  async update(id: string, payload: UserUpdatePayload, tryCounter = 0): Promise<boolean> {
+    const trx = await this.knexConnection.transaction()
+    try {
+      const user = await this.knexConnection.table(this.tableName).transacting(trx).forUpdate().where({ id }).first()
+      if (!user || user.version + 1 !== payload.version) {
+        throw new VersionMismatchError(
+          `Version mismatch for User with id: ${id}, current version: ${user?.version}, new version: ${payload.version}`
+        )
+      }
+      await this.knexConnection
+        .table(this.tableName)
+        .transacting(trx)
+        .update({ ...payload })
+        .where({ id })
+      await trx.commit()
 
-    return true
+      return true
+    } catch (e) {
+      if (e instanceof VersionMismatchError) {
+        if (tryCounter < 3) {
+          setTimeout(() => this.update(id, payload, tryCounter + 1), 1000)
+        } else {
+          this.logger.warn(e)
+        }
+        return true
+      }
+      throw e
+    } finally {
+      await trx.rollback()
+    }
   }
 
   /**
@@ -76,5 +101,35 @@ export class UserMainRepository {
     }
 
     return user
+  }
+
+  async rebuild() {
+    const aggregateTable = 'aggregate-users'
+
+    await this.knexConnection.table(this.tableName).del()
+
+    let users = await this.knexConnection.table(aggregateTable).orderBy('id', 'asc').limit(100)
+
+    while (users.length > 0) {
+      // eslint-disable-next-line no-await-in-loop
+      await this.knexConnection.table(this.tableName).insert(
+        users.map((u) => ({
+          id: u.id,
+          name: u.name,
+          version: u.version
+        }))
+      )
+
+      this.logger.info(`Applied users from ${users[0].id} to ${users[users.length - 1].id}`)
+
+      // eslint-disable-next-line no-await-in-loop
+      users = await this.knexConnection
+        .table(aggregateTable)
+        .where('id', '>', users[users.length - 1].id)
+        .orderBy('id', 'asc')
+        .limit(100)
+    }
+
+    this.logger.info('Rebuild projection finished!')
   }
 }

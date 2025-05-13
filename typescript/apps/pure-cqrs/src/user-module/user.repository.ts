@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common'
-import { Event, StoredEvent } from '../types/common.js'
+import knex from 'knex'
+import { InjectConnection } from 'nest-knexjs'
+import { Event } from '../types/common.js'
 import { UserAggregate } from './user.aggregate.js'
-import { UserCreated, UserNameUpdated } from './events/index.js'
 import { EventStoreRepository } from '../event-store-module/event-store.repository.js'
-import { UserCreatedEventPayload, UserNameUpdatedEventPayload } from '../types/user.js'
 
 /**
  * Repository for managing user aggregates.
@@ -12,10 +12,25 @@ import { UserCreatedEventPayload, UserNameUpdatedEventPayload } from '../types/u
  */
 @Injectable()
 export class UserRepository {
+  private tableName: string = 'aggregate-users'
+
   private cache: { [key: string]: UserAggregate } = {}
 
   // @ts-ignore
-  constructor(private readonly eventStore: EventStoreRepository) {}
+  constructor(
+    private readonly eventStore: EventStoreRepository,
+    @InjectConnection() private readonly knexConnection: knex.Knex
+  ) {}
+
+  async onModuleInit() {
+    if (!(await this.knexConnection.schema.hasTable(this.tableName))) {
+      await this.knexConnection.schema.createTable(this.tableName, (table) => {
+        table.string('id').primary()
+        table.integer('version')
+        table.string('name')
+      })
+    }
+  }
 
   /**
    * Builds a user aggregate by ID.
@@ -28,29 +43,16 @@ export class UserRepository {
       return new UserAggregate()
     }
 
-    const agg = this.cache[id] || new UserAggregate()
-    const events = await this.eventStore.getEventsByAggregateId(id, agg.version || 0)
-    const aggregate: UserAggregate = events.reduce(this.replayEvent, agg)
+    if (this.cache[id]) {
+      return this.cache[id]
+    }
+
+    const userData = await this.knexConnection.table(this.tableName).where({ id }).first()
+    const aggregate = new UserAggregate(userData)
 
     this.cache[id] = aggregate
 
     return aggregate
-  }
-
-  replayEvent(agg: UserAggregate, event: StoredEvent) {
-    const eventPayload = {
-      ...event.body,
-      aggregateId: agg.id,
-      aggregateVersion: event.aggregateVersion
-    }
-    if (event.name === 'UserCreated') {
-      agg.replayUserCreated(new UserCreated(eventPayload as UserCreatedEventPayload))
-    } else if (event.name === 'UserNameUpdated') {
-      agg.replayUserNameUpdated(new UserNameUpdated(eventPayload as UserNameUpdatedEventPayload))
-    } else {
-      throw new Error(`User aggregate replay. Unprocesible event ${event.name}`)
-    }
-    return agg
   }
 
   /**
@@ -63,7 +65,16 @@ export class UserRepository {
   async save(aggregate: UserAggregate, events: Event[]): Promise<boolean> {
     const aggregateId = aggregate.toJson().id
 
-    await this.eventStore.saveEvents(aggregateId, events)
+    const trx = await this.knexConnection.transaction()
+    try {
+      await this.eventStore.saveEvents(aggregateId, events, trx)
+
+      await trx(this.tableName).insert(aggregate.toJson()).onConflict('id').merge()
+      await trx.commit()
+    } catch (e) {
+      await trx.rollback()
+      throw new Error(`Can not save events. ${e}`)
+    }
 
     this.cache[aggregateId] = aggregate
 
