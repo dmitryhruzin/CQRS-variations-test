@@ -36,7 +36,7 @@ export class UserAggregate extends Aggregate {
     return [event]
   }
 
-  replayUserCreatedV1(event: UserCreated) {
+  replayUserCreated(event: UserCreated) {
     this.id = event.id
     this.name = event.name
 

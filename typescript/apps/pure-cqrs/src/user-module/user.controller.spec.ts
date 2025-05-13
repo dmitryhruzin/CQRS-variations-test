@@ -4,13 +4,12 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { CreateUserCommand } from './commands/index.js'
 import { ModuleRef } from '@nestjs/core/injector/module-ref.js'
 import { GetUsersMain, GetUserByIdMain } from './queries/index.js'
-import { UserMainRepository } from './projections/user-main.repository.js'
 
 describe('UserController', () => {
   describe('createUser', () => {
     const commandBus = new CommandBus({} as ModuleRef)
     commandBus.execute = jest.fn() as jest.Mocked<typeof commandBus.execute>
-    const controller = new UserController(commandBus, {} as QueryBus, {} as UserMainRepository)
+    const controller = new UserController(commandBus, {} as QueryBus)
 
     const testCases = [
       {
@@ -44,7 +43,7 @@ describe('UserController', () => {
   describe('getUsersMain', () => {
     const queryBus = new QueryBus({} as ModuleRef)
     queryBus.execute = jest.fn() as unknown as jest.Mocked<typeof queryBus.execute>
-    const controller = new UserController({} as CommandBus, queryBus, {} as UserMainRepository)
+    const controller = new UserController({} as CommandBus, queryBus)
 
     const testCases = [
       {
@@ -61,7 +60,7 @@ describe('UserController', () => {
   describe('getUserByIdMain', () => {
     const queryBus = new QueryBus({} as ModuleRef)
     queryBus.execute = jest.fn() as unknown as jest.Mocked<typeof queryBus.execute>
-    const controller = new UserController({} as CommandBus, queryBus, {} as UserMainRepository)
+    const controller = new UserController({} as CommandBus, queryBus)
 
     const testCases = [
       {
