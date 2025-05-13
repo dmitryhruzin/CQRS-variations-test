@@ -4,6 +4,7 @@ import { AcknowledgementResponse } from '../types/common.js'
 import { CreateUserRequest, UpdateUserNameRequest, UserMain } from '../types/user.js'
 import { CreateUserCommand, UpdateUserNameCommand } from './commands/index.js'
 import { GetUsersMain, GetUserByIdMain } from './queries/index.js'
+import { UserMainRepository } from './projections/user-main.repository.js'
 
 /**
  * Controller for managing user-related operations.
@@ -14,7 +15,8 @@ import { GetUsersMain, GetUserByIdMain } from './queries/index.js'
 export class UserController {
   constructor(
     private commandBus: CommandBus,
-    private readonly queryBus: QueryBus
+    private readonly queryBus: QueryBus,
+    private userMainRepository: UserMainRepository
   ) {}
 
   /**
@@ -68,5 +70,13 @@ export class UserController {
     }
 
     return this.queryBus.execute(new GetUserByIdMain(id))
+  }
+
+  @Post('/rebuild-user-main')
+  @HttpCode(200)
+  async rebuildUserMain(): Promise<AcknowledgementResponse> {
+    this.userMainRepository.rebuild()
+
+    return { status: 'OK. Process executed.' }
   }
 }

@@ -2,7 +2,10 @@ import knex from 'knex'
 import { Injectable } from '@nestjs/common'
 import { InjectConnection } from 'nest-knexjs'
 import { InjectLogger, Logger } from '@CQRS-variations-test/logger'
+import { EventStoreRepository } from '../../event-store-module/event-store.repository.js'
 import { User, UserUpdatePayload } from '../../types/user.js'
+import { VersionMismatchError } from '../../types/common.js'
+import { ProjectionBaseRepository } from './projection-base.repository.js'
 
 /**
  * Repository for managing main user data.
@@ -10,13 +13,14 @@ import { User, UserUpdatePayload } from '../../types/user.js'
  * @class UserMainRepository
  */
 @Injectable()
-export class UserMainRepository {
+export class UserMainRepository extends ProjectionBaseRepository {
   constructor(
+    private readonly eventStore: EventStoreRepository,
     @InjectConnection() readonly knexConnection: knex.Knex,
     @InjectLogger(UserMainRepository.name) readonly logger: Logger
-  ) {}
-
-  private tableName = 'users'
+  ) {
+    super(knexConnection, logger, 'users')
+  }
 
   /**
    * Initializes the module by creating the users table if it doesn't exist.
@@ -27,6 +31,12 @@ export class UserMainRepository {
         table.string('id').primary()
         table.string('name')
         table.integer('version')
+      })
+      await this.knexConnection.schema.createTable(this.snapshotTableName, (table) => {
+        table.string('id').primary()
+        table.string('name')
+        table.integer('version')
+        table.integer('lastEventID')
       })
     }
   }
@@ -43,13 +53,36 @@ export class UserMainRepository {
     return true
   }
 
-  async update(id: string, payload: UserUpdatePayload): Promise<boolean> {
-    await this.knexConnection
-      .table(this.tableName)
-      .update({ ...payload })
-      .where({ id })
+  async update(id: string, payload: UserUpdatePayload, tryCounter = 0): Promise<boolean> {
+    const trx = await this.knexConnection.transaction()
+    try {
+      const user = await this.knexConnection.table(this.tableName).transacting(trx).forUpdate().where({ id }).first()
+      if (!user || user.version + 1 !== payload.version) {
+        throw new VersionMismatchError(
+          `Version mismatch for User with id: ${id}, current version: ${user?.version}, new version: ${payload.version}`
+        )
+      }
+      await this.knexConnection
+        .table(this.tableName)
+        .transacting(trx)
+        .update({ ...payload })
+        .where({ id })
+      await trx.commit()
 
-    return true
+      return true
+    } catch (e) {
+      if (e instanceof VersionMismatchError) {
+        if (tryCounter < 3) {
+          setTimeout(() => this.update(id, payload, tryCounter + 1), 1000)
+        } else {
+          this.logger.warn(e)
+        }
+        return true
+      }
+      throw e
+    } finally {
+      await trx.rollback()
+    }
   }
 
   /**
@@ -76,5 +109,54 @@ export class UserMainRepository {
     }
 
     return user
+  }
+
+  async rebuild() {
+    const eventNames = ['UserCreated', 'UserNameUpdated']
+
+    let lastEventID = await this.applySnepshot()
+    let events = await this.eventStore.getEventsByName(eventNames, lastEventID)
+    while (events.length > 0) {
+      for (let i = 0; i < events.length; i += 1) {
+        switch (events[i].name) {
+          case 'UserCreated': {
+            const { id, name } = events[i].body as { id: string; name: string }
+            if (!id || !name) {
+              this.logger.warn(`event with id: ${events[i].id} is missing id or name`)
+              break
+            }
+            // eslint-disable-next-line no-await-in-loop
+            await this.save({ id, name })
+            break
+          }
+          case 'UserNameUpdated': {
+            const { name } = events[i].body as { name: string }
+            if (!name) {
+              this.logger.warn(`event with id: ${events[i].id} is missing name`)
+              break
+            }
+            // eslint-disable-next-line no-await-in-loop
+            await this.update(events[i].aggregateId, {
+              name,
+              version: events[i].aggregateVersion
+            })
+            break
+          }
+          default: {
+            break
+          }
+        }
+      }
+      lastEventID = events[events.length - 1].id
+      this.logger.info(`Applied events from ${events[0].id} to ${lastEventID}`)
+
+      // eslint-disable-next-line no-await-in-loop
+      events = await this.eventStore.getEventsByName(eventNames, lastEventID)
+    }
+
+    await this.createSnapshot(lastEventID)
+
+    this.logger.info('Rebuild projection finished!')
+    return 0
   }
 }

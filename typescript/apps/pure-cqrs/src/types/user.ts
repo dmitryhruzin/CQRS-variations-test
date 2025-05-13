@@ -44,9 +44,9 @@ export type AggregateUserData = AggregateMetadata & User
  */
 export type UserWithOptionalId = Omit<User, 'id'> & { id?: string }
 
-export type UserCreatedEventPayload = EventBasePayload & User
+export type UserCreatedV1EventPayload = EventBasePayload & User
 
-export type UserNameUpdatedEventPayload = EventBasePayload & {
+export type UserNameUpdatedV1EventPayload = EventBasePayload & {
   previousName: string
   name: string
 }
