@@ -269,3 +269,35 @@ calculateComplexity(
     { activityName: 'Map projection to DTO', complexity: 2 }
   ]
 )
+
+const calculateMigrationComplexity = (cyclomaticSource, cognitiveSource) => {
+  cyclomaticSource.map((m) => getClassValue(m.complexity, 69.5))
+
+  const cyclomatic = cyclomaticSource.map((m) => ({
+    ...m,
+    complexity: getClassValue(m.complexity, 69.5)
+  }))
+  console.log(cyclomatic)
+
+  const cognitive = cognitiveSource.map((m) => ({
+    ...m,
+    complexity: getClassValue(m.complexity, 39)
+  }))
+  console.log(cognitive)
+}
+
+console.log('Migration')
+calculateMigrationComplexity(
+  [
+    { activityName: 'Pure CQRS to Classical CQRS', complexity: 65.5 },
+    { activityName: 'Pure CQRS to mCQRS', complexity: 55.5 },
+    { activityName: 'Classical CQRS to mCQRS', complexity: 55.5 },
+    { activityName: 'mCQRS to Classical CQRS', complexity: 69.5 }
+  ],
+  [
+    { activityName: 'Pure CQRS to Classical CQRS', complexity: 12 },
+    { activityName: 'Pure CQRS to mCQRS', complexity: 26 },
+    { activityName: 'Classical CQRS to mCQRS', complexity: 28 },
+    { activityName: 'mCQRS to Classical CQRS', complexity: 39 }
+  ]
+)
