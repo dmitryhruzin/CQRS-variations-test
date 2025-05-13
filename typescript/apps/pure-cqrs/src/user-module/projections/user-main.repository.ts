@@ -26,6 +26,7 @@ export class UserMainRepository {
       await this.knexConnection.schema.createTable(this.tableName, (table) => {
         table.string('id').primary()
         table.string('name')
+        table.integer('version')
       })
     }
   }
@@ -37,7 +38,7 @@ export class UserMainRepository {
    * @returns {Promise<boolean>} Promise resolving to a boolean indicating success.
    */
   async save(record: User): Promise<boolean> {
-    await this.knexConnection.table(this.tableName).insert([{ ...record }])
+    await this.knexConnection.table(this.tableName).insert([{ ...record, version: 1 }])
 
     return true
   }

@@ -85,7 +85,7 @@ export class EventStoreRepository {
       events.map((e) => ({
         aggregateId,
         aggregateVersion: e.aggregateVersion,
-        name: Object.getPrototypeOf(e.constructor).name,
+        name: e.constructor.name,
         body: e.toJson()
       }))
     )
