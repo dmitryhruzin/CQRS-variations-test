@@ -1,7 +1,7 @@
 import { v4 } from 'uuid'
 import { AggregateUserData } from '../types/user.js'
 import { Aggregate } from '../aggregate-module/aggregate.js'
-import { UserCreatedV1, UserNameUpdatedV1 } from './events/index.js'
+import { UserCreatedV2, UserNameUpdatedV1, UserEnteredTheSystemV1 } from './events/index.js'
 import { CreateUserCommand, UpdateUserNameCommand } from './commands/index.js'
 
 /**
@@ -13,6 +13,8 @@ import { CreateUserCommand, UpdateUserNameCommand } from './commands/index.js'
 export class UserAggregate extends Aggregate {
   private name: string
 
+  private active: boolean = false
+
   constructor(data: AggregateUserData | null = null) {
     if (!data) {
       super()
@@ -20,6 +22,7 @@ export class UserAggregate extends Aggregate {
       super(data.id, data.version)
 
       this.name = data.name
+      this.active = data.active
     }
   }
 
@@ -35,11 +38,12 @@ export class UserAggregate extends Aggregate {
 
     this.version += 1
 
-    const event = new UserCreatedV1({
+    const event = new UserCreatedV2({
       id: this.id,
       name: this.name,
       aggregateId: this.id,
-      aggregateVersion: this.version
+      aggregateVersion: this.version,
+      active: this.active
     })
 
     this.apply(event)
@@ -70,6 +74,21 @@ export class UserAggregate extends Aggregate {
     return [event]
   }
 
+  enterTheSystem() {
+    this.version += 1
+
+    const event = new UserEnteredTheSystemV1({
+      aggregateId: this.id,
+      aggregateVersion: this.version
+    })
+
+    this.active = true
+
+    this.apply(event)
+
+    return [event]
+  }
+
   /**
    * Converts the aggregate to a JSON representation.
    *
@@ -86,7 +105,8 @@ export class UserAggregate extends Aggregate {
     return {
       id: this.id,
       version: this.version,
-      name: this.name
+      name: this.name,
+      active: this.active
     }
   }
 }

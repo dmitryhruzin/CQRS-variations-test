@@ -11,6 +11,7 @@ import { EventBasePayload, AggregateMetadata } from './common.js'
 export type User = {
   id: string
   name: string
+  active: boolean
 }
 
 /**
@@ -35,6 +36,7 @@ export type AggregateUserData = User & AggregateMetadata
 export type UserUpdatePayload = {
   version: number
   name?: string
+  active?: boolean
 }
 
 /**
@@ -113,4 +115,8 @@ export type CreateUserRequest = {
 export type UpdateUserNameRequest = {
   id: string
   name: string
+}
+
+export type EnterTheSystemRequest = {
+  id: string
 }

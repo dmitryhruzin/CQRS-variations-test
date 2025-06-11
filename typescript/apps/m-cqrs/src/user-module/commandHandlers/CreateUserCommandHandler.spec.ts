@@ -11,7 +11,7 @@ import { UserCreatedV1 } from '../events/index.js'
 
 describe('CreateUserCommandHandler', () => {
   describe('execute', () => {
-    const events = [new UserCreatedV1({ aggregateId: '123', aggregateVersion: 1, id: '1', name: 'John Doe' })]
+    const events = [new UserCreatedV1({ aggregateId: '123', aggregateVersion: 1, id: '1', name: 'John Doe', active: false })]
 
     let repository: UserRepository
     let aggregate: { create: (user: UserWithOptionalId) => Event[]; commit: () => {} }

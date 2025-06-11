@@ -1,8 +1,8 @@
 import { Controller, HttpCode, Post, Get, Body, Param } from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { AcknowledgementResponse } from '../types/common.js'
-import { CreateUserRequest, UpdateUserNameRequest, UserMain } from '../types/user.js'
-import { CreateUserCommand, UpdateUserNameCommand } from './commands/index.js'
+import { CreateUserRequest, UpdateUserNameRequest, EnterTheSystemRequest, UserMain } from '../types/user.js'
+import { CreateUserCommand, UpdateUserNameCommand, UserEnterTheSystemCommand } from './commands/index.js'
 import { GetUsersMain, GetUserByIdMain } from './queries/index.js'
 import { UserMainRepository } from './projections/user-main.repository.js'
 
@@ -39,11 +39,25 @@ export class UserController {
   @Post('/update-user-name')
   @HttpCode(200)
   async updateUserName(@Body() payload: UpdateUserNameRequest): Promise<AcknowledgementResponse> {
+    if (!payload.id || payload.id.trim() === '') {
+      throw new Error('ID must be a non-empty string')
+    }
     if (!payload.name || payload.name.trim() === '') {
       throw new Error('Name must be a non-empty string')
     }
 
     const command = new UpdateUserNameCommand(payload)
+    return this.commandBus.execute(command)
+  }
+
+  @Post('/enter')
+  @HttpCode(200)
+  async enterTheSystem(@Body() payload: EnterTheSystemRequest): Promise<AcknowledgementResponse> {
+    if (!payload.id || payload.id.trim() === '') {
+      throw new Error('ID must be a non-empty string')
+    }
+
+    const command = new UserEnterTheSystemCommand(payload)
     return this.commandBus.execute(command)
   }
 

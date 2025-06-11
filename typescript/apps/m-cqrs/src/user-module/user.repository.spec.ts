@@ -13,7 +13,7 @@ describe('UserRepository', () => {
 
     beforeEach(() => {
       db.table = jest.fn().mockImplementation(() => ({
-        where: () => ({ first: () => ({ id: '1', name: 'John', version: 2 }) })
+        where: () => ({ first: () => ({ id: '1', name: 'John', version: 2, active: false }) })
       })) as jest.Mocked<typeof db.table>
       repository = new UserRepository({} as EventStoreRepository, db)
     })
@@ -22,12 +22,12 @@ describe('UserRepository', () => {
       {
         description: 'should build an aggregate using the latest snapshot',
         id: '1',
-        expected: '{"id":"1","version":2,"name":"John"}'
+        expected: '{"id":"1","version":2,"name":"John","active":false}'
       },
       {
         description: 'should return an empty aggregate is thee is no ID specified',
         id: '',
-        expected: '{"version":0}'
+        expected: '{"version":0,"active":false}'
       }
     ]
     test.each(testCases)('$description', async ({ id, expected }) => {
