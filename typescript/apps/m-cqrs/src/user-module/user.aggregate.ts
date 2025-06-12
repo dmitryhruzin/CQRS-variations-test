@@ -1,7 +1,7 @@
 import { v4 } from 'uuid'
 import { AggregateUserData } from '../types/user.js'
 import { Aggregate } from '../aggregate-module/aggregate.js'
-import { UserCreatedV2, UserNameUpdatedV1, UserEnteredTheSystemV1 } from './events/index.js'
+import { UserCreatedV2, UserNameUpdatedV1, UserEnteredTheSystemV1, UserExitedTheSystemV1 } from './events/index.js'
 import { CreateUserCommand, UpdateUserNameCommand } from './commands/index.js'
 
 /**
@@ -83,6 +83,21 @@ export class UserAggregate extends Aggregate {
     })
 
     this.active = true
+
+    this.apply(event)
+
+    return [event]
+  }
+
+  exitTheSystem() {
+    this.version += 1
+
+    const event = new UserExitedTheSystemV1({
+      aggregateId: this.id,
+      aggregateVersion: this.version
+    })
+
+    this.active = false
 
     this.apply(event)
 

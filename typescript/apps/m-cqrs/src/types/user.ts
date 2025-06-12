@@ -120,3 +120,7 @@ export type UpdateUserNameRequest = {
 export type EnterTheSystemRequest = {
   id: string
 }
+
+export type ExitTheSystemRequest = {
+  id: string
+}

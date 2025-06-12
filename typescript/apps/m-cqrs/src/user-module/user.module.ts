@@ -6,12 +6,14 @@ import { UserController } from './user.controller.js'
 import {
   CreateUserCommandHandler,
   UpdateUserNameCommandHandler,
-  UserEnterTheSystemCommandHandler
+  UserEnterTheSystemCommandHandler,
+  UserExitTheSystemCommandHandler
 } from './commandHandlers/index.js'
 import {
   UserCreatedEventHandler,
   UserNameUpdatedEventHandler,
-  UserEnteredTheSystemEventHandler
+  UserEnteredTheSystemEventHandler,
+  UserExitedTheSystemEventHandler
 } from './eventHandlers/index.js'
 import { UserRepository } from './user.repository.js'
 import { UserMainRepository } from './projections/user-main.repository.js'
@@ -22,13 +24,15 @@ import { GetUserByIdMainQueryHandler, GetUsersMainQueryHandler } from './queryHa
 export const commandHandlers = [
   CreateUserCommandHandler,
   UpdateUserNameCommandHandler,
-  UserEnterTheSystemCommandHandler
+  UserEnterTheSystemCommandHandler,
+  UserExitTheSystemCommandHandler
 ]
 export const queryHandlers = [GetUsersMainQueryHandler, GetUserByIdMainQueryHandler]
 export const userEventHandlers = [
   UserCreatedEventHandler,
   UserNameUpdatedEventHandler,
-  UserEnteredTheSystemEventHandler
+  UserEnteredTheSystemEventHandler,
+  UserExitedTheSystemEventHandler
 ]
 
 /**
