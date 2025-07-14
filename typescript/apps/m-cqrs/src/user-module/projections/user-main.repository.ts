@@ -2,8 +2,10 @@ import knex from 'knex'
 import { Injectable } from '@nestjs/common'
 import { InjectConnection } from 'nest-knexjs'
 import { InjectLogger, Logger } from '@CQRS-variations-test/logger'
+import { EventStoreRepository } from '../../event-store-module/event-store.repository.js'
 import { User, UserUpdatePayload } from '../../types/user.js'
 import { VersionMismatchError } from '../../types/common.js'
+import { ProjectionBaseRepository } from './projection-base.repository.js'
 
 /**
  * Repository for managing main user data.
@@ -11,14 +13,14 @@ import { VersionMismatchError } from '../../types/common.js'
  * @class UserMainRepository
  */
 @Injectable()
-export class UserMainRepository {
-  private tableName: string = 'users'
-
-  // @ts-ignore
+export class UserMainRepository extends ProjectionBaseRepository {
   constructor(
-    @InjectConnection() private readonly knexConnection: knex.Knex,
-    @InjectLogger(UserMainRepository.name) private readonly logger: Logger
-  ) {}
+    private readonly eventStore: EventStoreRepository,
+    @InjectConnection() readonly knexConnection: knex.Knex,
+    @InjectLogger(UserMainRepository.name) readonly logger: Logger
+  ) {
+    super(knexConnection, logger, 'users')
+  }
 
   /**
    * Initializes the module by creating the users table if it doesn't exist.
@@ -29,6 +31,12 @@ export class UserMainRepository {
         table.string('id').primary()
         table.string('name')
         table.integer('version')
+      })
+      await this.knexConnection.schema.createTable(this.snapshotTableName, (table) => {
+        table.string('id').primary()
+        table.string('name')
+        table.integer('version')
+        table.integer('lastEventID')
       })
     }
   }
@@ -104,32 +112,51 @@ export class UserMainRepository {
   }
 
   async rebuild() {
-    const aggregateTable = 'aggregate-users'
+    const eventNames = ['UserCreated', 'UserNameUpdated']
 
-    await this.knexConnection.table(this.tableName).del()
+    let lastEventID = await this.applySnapshot()
+    let events = await this.eventStore.getEventsByName(eventNames, lastEventID)
+    while (events.length > 0) {
+      for (let i = 0; i < events.length; i += 1) {
+        switch (events[i].name) {
+          case 'UserCreated': {
+            const { id, name } = events[i].body as { id: string; name: string }
+            if (!id || !name) {
+              this.logger.warn(`event with id: ${events[i].id} is missing id or name`)
+              break
+            }
+            // eslint-disable-next-line no-await-in-loop
+            await this.save({ id, name })
+            break
+          }
+          case 'UserNameUpdated': {
+            const { name } = events[i].body as { name: string }
+            if (!name) {
+              this.logger.warn(`event with id: ${events[i].id} is missing name`)
+              break
+            }
+            // eslint-disable-next-line no-await-in-loop
+            await this.update(events[i].aggregateId, {
+              name,
+              version: events[i].aggregateVersion
+            })
+            break
+          }
+          default: {
+            break
+          }
+        }
+      }
+      lastEventID = events[events.length - 1].id
+      this.logger.info(`Applied events from ${events[0].id} to ${lastEventID}`)
 
-    let users = await this.knexConnection.table(aggregateTable).orderBy('id', 'asc').limit(100)
-
-    while (users.length > 0) {
       // eslint-disable-next-line no-await-in-loop
-      await this.knexConnection.table(this.tableName).insert(
-        users.map((u) => ({
-          id: u.id,
-          name: u.name,
-          version: u.version
-        }))
-      )
-
-      this.logger.info(`Applied users from ${users[0].id} to ${users[users.length - 1].id}`)
-
-      // eslint-disable-next-line no-await-in-loop
-      users = await this.knexConnection
-        .table(aggregateTable)
-        .where('id', '>', users[users.length - 1].id)
-        .orderBy('id', 'asc')
-        .limit(100)
+      events = await this.eventStore.getEventsByName(eventNames, lastEventID)
     }
 
+    await this.createSnapshot(lastEventID)
+
     this.logger.info('Rebuild projection finished!')
+    return 0
   }
 }

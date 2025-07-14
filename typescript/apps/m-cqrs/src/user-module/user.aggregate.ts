@@ -3,43 +3,45 @@ import { AggregateUserData } from '../types/user.js'
 import { Aggregate } from '../aggregate-module/aggregate.js'
 import { UserCreatedV1, UserNameUpdatedV1 } from './events/index.js'
 import { CreateUserCommand, UpdateUserNameCommand } from './commands/index.js'
+import { Snapshot } from '../types/common.js'
 
 /**
- * Represents the UserAggregate, managing user state and behavior.
+ * Aggregate root for managing user state and events.
  *
  * @class UserAggregate
- * @extends {Aggregate}
+ * @extends {AggregateRoot}
  */
 export class UserAggregate extends Aggregate {
   private name: string
 
-  constructor(data: AggregateUserData | null = null) {
-    if (!data) {
+  constructor(snapshot: Snapshot<UserAggregate> = null) {
+    if (!snapshot) {
       super()
     } else {
-      super(data.id, data.version)
+      super(snapshot.aggregateId, snapshot.aggregateVersion)
 
-      this.name = data.name
+      if (snapshot.state) {
+        this.name = snapshot.state.name
+      }
     }
   }
 
   /**
-   * Creates a new user aggregate.  Applies the UserCreatedV1 event to initialize the user.
+   * Creates a new user aggregate.
    *
-   * @param {CreateUserCommand} user - The command containing the user data for creation.
-   * @returns {Event[]} An array containing the UserCreatedV1 event that was applied.
+   * @param {UserWithOptionalId} user - The user data.
+   * @returns {UserCreatedV1[]} Array of events applied.
+   *
+   * This method initializes a new user aggregate and applies the UserCreatedV1 event.
    */
   create(command: CreateUserCommand) {
     this.id = v4()
-    this.name = command.name
-
-    this.version += 1
 
     const event = new UserCreatedV1({
       id: this.id,
-      name: this.name,
+      name: command.name,
       aggregateId: this.id,
-      aggregateVersion: this.version
+      aggregateVersion: this.version + 1
     })
 
     this.apply(event)
@@ -47,37 +49,32 @@ export class UserAggregate extends Aggregate {
     return [event]
   }
 
-  /**
-   * Updates the name of the user. Applies the UserNameUpdatedV1 event.
-   *
-   * @param {UpdateUserNameCommand} command - The command containing the user ID and new name.
-   * @returns {Event[]} An array containing the UserNameUpdatedV1 event that was applied.
-   */
-  updateName(command: UpdateUserNameCommand) {
-    this.version += 1
+  replayUserCreatedV1(event: UserCreatedV1) {
+    this.id = event.id
+    this.name = event.name
 
+    this.version += 1
+  }
+
+  updateName(command: UpdateUserNameCommand) {
     const event = new UserNameUpdatedV1({
       previousName: this.name,
       name: command.name,
       aggregateId: this.id,
-      aggregateVersion: this.version
+      aggregateVersion: this.version + 1
     })
-
-    this.name = command.name
 
     this.apply(event)
 
     return [event]
   }
 
-  /**
-   * Converts the aggregate to a JSON representation.
-   *
-   * @returns {AggregateUserData} The user data in JSON format, including id, name, and version.
-   * @throws {Error} If the aggregate is empty or not properly initialized.
-   *
-   * This method serializes the user aggregate into a JSON object suitable for storage or transmission.
-   */
+  replayUserNameUpdatedV1(event: UserNameUpdatedV1) {
+    this.name = event.name
+
+    this.version += 1
+  }
+
   toJson(): AggregateUserData {
     if (!this.id) {
       throw new Error('Aggregate is empty')
