@@ -41,7 +41,7 @@ export class ProjectionBaseRepository {
     this.logger.info('Snapshot created!')
   }
 
-  async applySnepshot(): Promise<number> {
+  async applySnapshot(): Promise<number> {
     await this.knexConnection.table(this.tableName).del()
 
     let records = await this.knexConnection.table(this.snapshotTableName).orderBy('id', 'asc').limit(100)

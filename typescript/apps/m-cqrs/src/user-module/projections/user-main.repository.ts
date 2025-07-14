@@ -64,6 +64,8 @@ export class UserMainRepository {
 
       return true
     } catch (e) {
+      await trx.rollback()
+
       if (e instanceof VersionMismatchError) {
         if (tryCounter < 3) {
           setTimeout(() => this.update(id, payload, tryCounter + 1), 1000)
@@ -73,8 +75,6 @@ export class UserMainRepository {
         return true
       }
       throw e
-    } finally {
-      await trx.rollback()
     }
   }
 
