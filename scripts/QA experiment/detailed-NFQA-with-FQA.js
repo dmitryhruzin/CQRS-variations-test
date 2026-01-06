@@ -5,17 +5,21 @@ const mvpDevTimeSprints = 8
 const assessmentPeriodSprints = 12
 const expectedFrequencyChangeEventTypesPerSprint = 1
 const expectedFrequencyDataRemovingPerSprint = 0.5
-const additionNew = 0.2
-const modificationOld = 0.8
+const additionNew = 0.3
+const modificationOld = 0.7
 
 const commandsPerSprint = commands / mvpDevTimeSprints
 const queriesPerSprint = queries / mvpDevTimeSprints
 
 const isComplexity = {
-  commandDevelopment: commands + additionNew * commandsPerSprint * assessmentPeriodSprints,
-  commandModification: modificationOld * commandsPerSprint * assessmentPeriodSprints,
-  queryDevelopment: queries + additionNew * queriesPerSprint * assessmentPeriodSprints,
-  queryModification: modificationOld * queriesPerSprint * assessmentPeriodSprints,
+  // commandDevelopment: commands + additionNew * commandsPerSprint * assessmentPeriodSprints,
+  // commandModification: modificationOld * commandsPerSprint * assessmentPeriodSprints,
+  // queryDevelopment: queries + additionNew * queriesPerSprint * assessmentPeriodSprints,
+  // queryModification: modificationOld * queriesPerSprint * assessmentPeriodSprints,
+  commandDevelopment: commands + commandsPerSprint * assessmentPeriodSprints,
+  commandModification: (modificationOld / additionNew) * commandsPerSprint * assessmentPeriodSprints,
+  queryDevelopment: queries + queriesPerSprint * assessmentPeriodSprints,
+  queryModification: (modificationOld / additionNew) * queriesPerSprint * assessmentPeriodSprints,
   changeEventTypes: (mvpDevTimeSprints + assessmentPeriodSprints) * expectedFrequencyChangeEventTypesPerSprint,
   dataRemoving: assessmentPeriodSprints * expectedFrequencyDataRemovingPerSprint
 }
