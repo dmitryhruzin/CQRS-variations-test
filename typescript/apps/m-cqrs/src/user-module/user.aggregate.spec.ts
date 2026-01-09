@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals'
 import { UserAggregate } from './user.aggregate.js'
 import { CreateUserCommand } from './commands/CreateUserCommand.js'
+import { UpdateUserNameCommand } from './commands/UpdateUserNameCommand.js'
 
 describe('UserAggregate', () => {
   describe('toJson', () => {
@@ -64,6 +65,51 @@ describe('UserAggregate', () => {
 
       expect(aggregate.apply).toHaveBeenCalledTimes(1)
       expect(result[0].toJson().name).toEqual(expected.name)
+    })
+  })
+
+  describe('updateName', () => {
+    let aggregate: UserAggregate
+
+    beforeEach(() => {
+      aggregate = new UserAggregate()
+      aggregate.apply = jest.fn()
+    })
+
+    const testCases = [
+      {
+        description: 'should update user name',
+        payload: { id: '1', name: 'John Doe' },
+        expected: { id: '1', name: 'John Doe' }
+      }
+    ]
+    test.each(testCases)('$description', ({ payload, expected }) => {
+      const result = aggregate.updateName(new UpdateUserNameCommand(payload))
+
+      expect(aggregate.apply).toHaveBeenCalledTimes(1)
+      expect(result[0].toJson().name).toEqual(expected.name)
+    })
+  })
+
+  describe('enterTheSystem', () => {
+    let aggregate: UserAggregate
+
+    beforeEach(() => {
+      aggregate = new UserAggregate()
+      aggregate.apply = jest.fn()
+    })
+
+    const testCases = [
+      {
+        description: 'should make the user active',
+        expected: { active: true }
+      }
+    ]
+    test.each(testCases)('$description', ({ expected }) => {
+      const result = aggregate.enterTheSystem()
+
+      expect(aggregate.apply).toHaveBeenCalledTimes(1)
+      expect(result[0].toJson().active).toEqual(expected.active)
     })
   })
 })

@@ -29,6 +29,7 @@ export class UserMainRepository {
         table.string('id').primary()
         table.string('name')
         table.integer('version')
+        table.boolean('active')
       })
     }
   }
@@ -116,7 +117,8 @@ export class UserMainRepository {
         users.map((u) => ({
           id: u.id,
           name: u.name,
-          version: u.version
+          version: u.version,
+          active: u.actibe
         }))
       )
 
