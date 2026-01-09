@@ -29,6 +29,7 @@ export class UserMainRepository {
         table.string('id').primary()
         table.string('name')
         table.integer('version')
+        table.boolean('active')
       })
     }
   }
@@ -63,6 +64,8 @@ export class UserMainRepository {
 
       return true
     } catch (e) {
+      await trx.rollback()
+
       if (e instanceof VersionMismatchError) {
         if (tryCounter < 3) {
           setTimeout(() => this.update(id, payload, tryCounter + 1), 1000)
@@ -72,8 +75,6 @@ export class UserMainRepository {
         return true
       }
       throw e
-    } finally {
-      await trx.rollback()
     }
   }
 
@@ -116,7 +117,8 @@ export class UserMainRepository {
         users.map((u) => ({
           id: u.id,
           name: u.name,
-          version: u.version
+          version: u.version,
+          active: u.actibe
         }))
       )
 

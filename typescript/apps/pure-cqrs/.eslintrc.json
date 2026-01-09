@@ -1,0 +1,4 @@
+{
+  "root": true,
+  "extends": ["@CQRS-variations-test/eslint-config/node"]
+}

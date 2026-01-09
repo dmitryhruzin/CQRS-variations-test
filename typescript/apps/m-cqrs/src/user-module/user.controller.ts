@@ -2,8 +2,19 @@ import { Controller, HttpCode, Post, Get, Body, Param } from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { InjectLogger, Logger } from '@CQRS-variations-test/logger'
 import { AcknowledgementResponse } from '../types/common.js'
-import { CreateUserRequest, UpdateUserNameRequest, UserMain } from '../types/user.js'
-import { CreateUserCommand, UpdateUserNameCommand } from './commands/index.js'
+import {
+  CreateUserRequest,
+  UpdateUserNameRequest,
+  EnterTheSystemRequest,
+  ExitTheSystemRequest,
+  UserMain
+} from '../types/user.js'
+import {
+  CreateUserCommand,
+  UpdateUserNameCommand,
+  UserEnterTheSystemCommand,
+  UserExitTheSystemCommand
+} from './commands/index.js'
 import { GetUsersMain, GetUserByIdMain } from './queries/index.js'
 import { UserMainRepository } from './projections/user-main.repository.js'
 
@@ -42,11 +53,37 @@ export class UserController {
   @HttpCode(200)
   async updateUserName(@Body() payload: UpdateUserNameRequest): Promise<AcknowledgementResponse> {
     this.logger.info(`{"id":"${payload.id}","startTime":${Date.now()}}`)
+
+    if (!payload.id || payload.id.trim() === '') {
+      throw new Error('ID must be a non-empty string')
+    }
     if (!payload.name || payload.name.trim() === '') {
       throw new Error('Name must be a non-empty string')
     }
 
     const command = new UpdateUserNameCommand(payload)
+    return this.commandBus.execute(command)
+  }
+
+  @Post('/enter')
+  @HttpCode(200)
+  async enterTheSystem(@Body() payload: EnterTheSystemRequest): Promise<AcknowledgementResponse> {
+    if (!payload.id || payload.id.trim() === '') {
+      throw new Error('ID must be a non-empty string')
+    }
+
+    const command = new UserEnterTheSystemCommand(payload)
+    return this.commandBus.execute(command)
+  }
+
+  @Post('/exit')
+  @HttpCode(200)
+  async exitTheSystem(@Body() payload: ExitTheSystemRequest): Promise<AcknowledgementResponse> {
+    if (!payload.id || payload.id.trim() === '') {
+      throw new Error('ID must be a non-empty string')
+    }
+
+    const command = new UserExitTheSystemCommand(payload)
     return this.commandBus.execute(command)
   }
 

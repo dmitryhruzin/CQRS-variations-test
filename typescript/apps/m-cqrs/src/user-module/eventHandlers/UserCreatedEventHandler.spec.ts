@@ -2,7 +2,7 @@ import { jest } from '@jest/globals'
 import { UserCreatedEventHandler } from './UserCreatedEventHandler.js'
 import { UserMainRepository } from '../projections/user-main.repository.js'
 import knex from 'knex'
-import { UserCreatedV1 } from '../events/index.js'
+import { UserCreatedV2 } from '../events/index.js'
 import { Logger } from '@CQRS-variations-test/logger'
 
 describe('UserCreatedEventHandler', () => {
@@ -19,8 +19,8 @@ describe('UserCreatedEventHandler', () => {
     const testCases = [
       {
         description: 'should call repository with specific event',
-        payload: new UserCreatedV1({ id: '1', name: 'John Doe', aggregateId: '1234', aggregateVersion: 1 }),
-        expected: { id: '1', name: 'John Doe' }
+        payload: new UserCreatedV2({ id: '1', name: 'John Doe', aggregateId: '1234', aggregateVersion: 1, active: false }),
+        expected: { id: '1', name: 'John Doe', active: false }
       }
     ]
     test.each(testCases)('$description', async ({ payload, expected }) => {

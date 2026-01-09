@@ -12,7 +12,7 @@ const classicalCQRS = {
   queryImplementation: 18,
   queryModification: 10,
   projectionImplementation: 36,
-  projectionModification: 10,
+  projectionModification: 10
 }
 
 const mCQRS = {
@@ -23,18 +23,26 @@ const mCQRS = {
   queryImplementation: 18,
   queryModification: 10,
   projectionImplementation: 20,
-  projectionModification: 6,
+  projectionModification: 6
 }
 
-const classicalCQRSNorm = Object.keys(classicalCQRS).reduce((agg, key) => ({
-  ...agg, [key]: classicalCQRS[key] / (classicalCQRS[key] + mCQRS[key]),
-}), {})
+const classicalCQRSNorm = Object.keys(classicalCQRS).reduce(
+  (agg, key) => ({
+    ...agg,
+    [key]: classicalCQRS[key] / (classicalCQRS[key] + mCQRS[key])
+  }),
+  {}
+)
 
-const mCQRSNorm = Object.keys(classicalCQRS).reduce((agg, key) => ({
-  ...agg, [key]: mCQRS[key] / (classicalCQRS[key] + mCQRS[key]),
-}), {})
+const mCQRSNorm = Object.keys(classicalCQRS).reduce(
+  (agg, key) => ({
+    ...agg,
+    [key]: mCQRS[key] / (classicalCQRS[key] + mCQRS[key])
+  }),
+  {}
+)
 
-Object.keys(classicalCQRS).forEach(key => {
+Object.keys(classicalCQRS).forEach((key) => {
   if (mCQRSNorm[key] + classicalCQRSNorm[key] !== 1) {
     console.warn('Normalization failed', key)
   }
@@ -46,20 +54,24 @@ const isComplexity = {
   queryImplementation: queries + additionNew * queries,
   queryModification: modificationOld * queries,
   projectionImplementation: projections + additionNew * projections,
-  projectionModification: modificationOld * projections,
+  projectionModification: modificationOld * projections
 }
 
 const isTotalComplexity = Object.values(isComplexity).reduce((sum, value) => sum + value, 0)
 
-const isComplexityNorm = Object.keys(isComplexity).reduce((agg, key) => ({
-  ...agg, [key]: isComplexity[key] / isTotalComplexity
-}), {})
+const isComplexityNorm = Object.keys(isComplexity).reduce(
+  (agg, key) => ({
+    ...agg,
+    [key]: isComplexity[key] / isTotalComplexity
+  }),
+  {}
+)
 
 if (Object.values(isComplexityNorm).reduce((sum, value) => sum + value, 0) !== 1) {
   console.warn('Normalization failed isComplexityNorm')
 }
 
-const matrix = Array.from(Array(100), () => new Array(100));
+const matrix = Array.from(Array(100), () => new Array(100))
 
 let min = 100
 let max = 0
@@ -74,22 +86,36 @@ for (let i = 0; i < 100; i++) {
     const readPer = 0.01 * j
     const writePer = 1 - readPer
 
-    const isCase = Object.keys(isComplexityNorm).reduce((agg, key) => ({
-      ...agg, [key]: isComplexityNorm[key] * complCoef
-    }), {
-      read: readPer * perfCoef,
-      write: writePer * perfCoef,
-    })
+    const isCase = Object.keys(isComplexityNorm).reduce(
+      (agg, key) => ({
+        ...agg,
+        [key]: isComplexityNorm[key] * complCoef
+      }),
+      {
+        read: readPer * perfCoef,
+        write: writePer * perfCoef
+      }
+    )
 
-    const classicalCQRSApplication = Object.keys(isCase).reduce((agg, key) => ({
-      ...agg, [key]: classicalCQRSNorm[key] * isCase[key]
-    }), {})
+    const classicalCQRSApplication = Object.keys(isCase).reduce(
+      (agg, key) => ({
+        ...agg,
+        [key]: classicalCQRSNorm[key] * isCase[key]
+      }),
+      {}
+    )
 
-    const mCQRSApplication = Object.keys(isCase).reduce((agg, key) => ({
-      ...agg, [key]: mCQRSNorm[key] * isCase[key]
-    }), {})
+    const mCQRSApplication = Object.keys(isCase).reduce(
+      (agg, key) => ({
+        ...agg,
+        [key]: mCQRSNorm[key] * isCase[key]
+      }),
+      {}
+    )
 
-    const classicalCQRSResult = Math.round((1 - Object.values(classicalCQRSApplication).reduce((sum, value) => sum + value, 0)) * 100)
+    const classicalCQRSResult = Math.round(
+      (1 - Object.values(classicalCQRSApplication).reduce((sum, value) => sum + value, 0)) * 100
+    )
     const mCQRSResult = Math.round((1 - Object.values(mCQRSApplication).reduce((sum, value) => sum + value, 0)) * 100)
 
     if (mCQRSResult + classicalCQRSResult !== 100) {

@@ -28,16 +28,11 @@ export class UserRepository {
         table.string('id').primary()
         table.integer('version')
         table.string('name')
+        table.boolean('active')
       })
     }
   }
 
-  /**
-   * Builds a user aggregate by ID.
-   *
-   * @param {string} [id] - The user ID (optional).
-   * @returns {Promise<UserAggregate>} Promise resolving to the user aggregate.
-   */
   async buildUserAggregate(id?: string): Promise<UserAggregate> {
     if (!id) {
       return new UserAggregate()
@@ -55,13 +50,6 @@ export class UserRepository {
     return aggregate
   }
 
-  /**
-   * Saves the user aggregate and events to the event store.
-   *
-   * @param {UserAggregate} aggregate - The user aggregate.
-   * @param {Event[]} events - The events to save.
-   * @returns {Promise<boolean>} Promise resolving to a boolean indicating success.
-   */
   async save(aggregate: UserAggregate, events: Event[]): Promise<boolean> {
     const aggregateId = aggregate.toJson().id
 

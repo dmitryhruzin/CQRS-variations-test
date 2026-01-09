@@ -71,6 +71,8 @@ export class UserMainRepository extends ProjectionBaseRepository {
 
       return true
     } catch (e) {
+      await trx.rollback()
+
       if (e instanceof VersionMismatchError) {
         if (tryCounter < 3) {
           setTimeout(() => this.update(id, payload, tryCounter + 1), 1000)
@@ -80,8 +82,6 @@ export class UserMainRepository extends ProjectionBaseRepository {
         return true
       }
       throw e
-    } finally {
-      await trx.rollback()
     }
   }
 
@@ -114,7 +114,7 @@ export class UserMainRepository extends ProjectionBaseRepository {
   async rebuild() {
     const eventNames = ['UserCreated', 'UserNameUpdated']
 
-    let lastEventID = await this.applySnepshot()
+    let lastEventID = await this.applySnapshot()
     let events = await this.eventStore.getEventsByName(eventNames, lastEventID)
     while (events.length > 0) {
       for (let i = 0; i < events.length; i += 1) {
