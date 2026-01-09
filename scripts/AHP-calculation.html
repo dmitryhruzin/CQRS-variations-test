@@ -30,9 +30,9 @@
             const modificationOld = 0.5
 
             const isComplexity = {
-                commandImplementation: commands + additionNew * commands,
+                commandDevelopment: commands + additionNew * commands,
                 commandModification: modificationOld * commands,
-                queryImplementation: queries + additionNew * queries,
+                queryDevelopment: queries + additionNew * queries,
                 queryModification: modificationOld * queries,
             }
 
@@ -49,19 +49,19 @@
             const classicalCQRS = {
                 read: 43.8,
                 write: 132.43,
-                commandImplementation: 95,
-                commandModification: 33,
-                queryImplementation: 18,
-                queryModification: 10,
+                commandDevelopment: 77.30,
+                commandModification: 58.95,
+                queryDevelopment: 29.91,
+                queryModification: 24.64,
             }
 
             const mCQRS = {
                 read: 43.84,
                 write: 210.89,
-                commandImplementation: 81,
-                commandModification: 24,
-                queryImplementation: 18,
-                queryModification: 10,
+                commandDevelopment: 70.85,
+                commandModification: 45.56,
+                queryDevelopment: 27.91,
+                queryModification: 22.64,
             }
 
             const classicalCQRSNorm = Object.keys(classicalCQRS).reduce((agg, key) => ({
