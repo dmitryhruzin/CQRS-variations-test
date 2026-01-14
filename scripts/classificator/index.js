@@ -9,6 +9,8 @@ import * as rebuildImplementationComplexity from './data/rebuild-implementation-
 import * as rebuildModificationComplexity from './data/rebuild-modification-complexity.js'
 import * as updateImplementationComplexity from './data/update-implementation-complexity.js'
 import * as updateModificationComplexity from './data/update-modification-complexity.js'
+import * as dataRemovingImplementationComplexity from './data/data-removing-implementation-complexity.js'
+import * as eventVersionImplementationComplexity from './data/event-version-implementation-complexity.js'
 
 const classificator = new Classificator(37, 24)
 
@@ -63,6 +65,18 @@ console.table({
         updateModificationComplexity.classicalCQRSrealizationComplexity,
         updateModificationComplexity.classicalCQRSdesignComplexity
       )
+    },
+    changeEventTypes: {
+      implementation: classificator.calculateComplexity(
+        updateImplementationComplexity.classicalCQRSrealizationComplexity,
+        updateImplementationComplexity.classicalCQRSdesignComplexity
+      )
+    },
+    dataRemoving: {
+      implementation: classificator.calculateComplexity(
+        dataRemovingImplementationComplexity.classicalCQRSrealizationComplexity,
+        dataRemovingImplementationComplexity.classicalCQRSdesignComplexity
+      )
     }
   },
   mCQRS: {
@@ -114,6 +128,18 @@ console.table({
       modification: classificator.calculateComplexity(
         updateModificationComplexity.mCQRSrealizationComplexity,
         updateModificationComplexity.mCQRSdesignComplexity
+      )
+    },
+    changeEventTypes: {
+      implementation: classificator.calculateComplexity(
+        eventVersionImplementationComplexity.mCQRSrealizationComplexity,
+        eventVersionImplementationComplexity.mCQRSdesignComplexity
+      )
+    },
+    dataRemoving: {
+      implementation: classificator.calculateComplexity(
+        dataRemovingImplementationComplexity.mCQRSrealizationComplexity,
+        dataRemovingImplementationComplexity.mCQRSdesignComplexity
       )
     }
   }
