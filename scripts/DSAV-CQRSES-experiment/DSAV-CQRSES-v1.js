@@ -1,4 +1,4 @@
-class DSAVCQRSES {
+export default class DSAVCQRSES {
   constructor(params, classicalCQRSMetrics, mCQRSMetrics) {
     this.params = params
     this.classicalCQRSMetrics = classicalCQRSMetrics
@@ -153,60 +153,4 @@ class DSAVCQRSES {
 
     return { mCQRSResult, classicalCQRSResult }
   }
-}
-
-// Add a global function to use the class
-function calculateApplicability(perfCoef, complCoef) {
-  // You'll need to define your params and metrics here
-  const params = {
-    create: 1,
-    update: 1,
-    eventualConsistency: 1,
-    queries: 1,
-    projections: 1,
-    expectedFrequencyChangeEventTypesPerSprint: 1,
-    expectedFrequencyDataRemovingPerSprint: 1,
-    mvpDevTimeSprints: 1,
-    assessmentPeriodSprints: 1,
-    modificationOld: 1,
-    read: 1,
-    write: 1
-  };
-
-  const classicalCQRSMetrics = {
-    changeEventTypes: 1,
-    dataRemoving: 1,
-    createDevelopment: 1,
-    createModification: 1,
-    updateDevelopment: 1,
-    updateModification: 1,
-    eventualConsistencyDevelopment: 1,
-    eventualConsistencyModification: 1,
-    queryDevelopment: 1,
-    queryModification: 1,
-    projectionRebuildDevelopment: 1,
-    projectionRebuildModification: 1,
-    read: 1,
-    write: 1
-  };
-
-  const mCQRSMetrics = {
-    changeEventTypes: 2,
-    dataRemoving: 2,
-    createDevelopment: 2,
-    createModification: 2,
-    updateDevelopment: 2,
-    updateModification: 2,
-    eventualConsistencyDevelopment: 2,
-    eventualConsistencyModification: 2,
-    queryDevelopment: 2,
-    queryModification: 2,
-    projectionRebuildDevelopment: 2,
-    projectionRebuildModification: 2,
-    read: 2,
-    write: 2
-  };
-
-  const dsav = new DSAVCQRSES(params, classicalCQRSMetrics, mCQRSMetrics);
-  return dsav.calculateApplicability(perfCoef, complCoef);
 }

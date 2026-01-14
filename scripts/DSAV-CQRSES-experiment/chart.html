@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heatmap Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        canvas {
+            width: 1000px;
+            height: 1000px;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <h2>Chart</h2>
+    <canvas id="chart"></canvas>
+    <script type="module">
+        import DSAVCQRSES from './DSAV-CQRSES-v1.js';
+        import { minParams, avgParams, maxParams, classicalCQRS, mCQRS } from './data.js';
+
+        const dsavMinModel = new DSAVCQRSES(minParams, classicalCQRS, mCQRS);
+        const dsavAvgModel = new DSAVCQRSES(avgParams, classicalCQRS, mCQRS);
+        const dsavMaxModel = new DSAVCQRSES(maxParams, classicalCQRS, mCQRS);
+
+        const minValues = [];
+        const avgValues = [];
+        const maxValues = [];
+
+        for(let i = 0; i < 100; i++) {
+            const perfCoef = i / 100;
+            const complexityCoef = 1 - perfCoef;
+            minValues.push(dsavMinModel.calculateApplicability(perfCoef, complexityCoef).mCQRSResult);
+            avgValues.push(dsavAvgModel.calculateApplicability(perfCoef, complexityCoef).mCQRSResult);
+            maxValues.push(dsavMaxModel.calculateApplicability(perfCoef, complexityCoef).mCQRSResult);
+        }
+
+        console.log('Min Values:', minValues);
+        console.log('Avg Values:', avgValues);
+        console.log('Max Values:', maxValues);
+
+        // Create the chart
+        const ctx = document.getElementById('chart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 100}, (_, i) => i),
+                datasets: [
+                    {
+                        label: 'Min Model',
+                        data: minValues,
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Avg Model',
+                        data: avgValues,
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Max Model',
+                        data: maxValues,
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        tension: 0.1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Performance Coefficient (%)'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Applicability Value'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
