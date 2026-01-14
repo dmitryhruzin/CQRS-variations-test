@@ -6,6 +6,7 @@
     <title>Heatmap Chart</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -24,6 +25,9 @@
     <script type="module">
         import DSAVCQRSES from './DSAV-CQRSES-v1.js';
         import { minParams, avgParams, maxParams, classicalCQRS, mCQRS } from './data.js';
+
+        // Register the annotation plugin
+        Chart.register(window['chartjs-plugin-annotation']);
 
         const dsavMinModel = new DSAVCQRSES(minParams, classicalCQRS, mCQRS);
         const dsavAvgModel = new DSAVCQRSES(avgParams, classicalCQRS, mCQRS);
@@ -62,15 +66,15 @@
                     {
                         label: 'Avg Model',
                         data: avgValues,
-                        borderColor: 'rgb(75, 192, 192)',
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgb(54, 162, 235)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
                         tension: 0.1
                     },
                     {
                         label: 'Max Model',
                         data: maxValues,
-                        borderColor: 'rgb(75, 192, 192)',
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgb(255, 205, 86)',
+                        backgroundColor: 'rgba(255, 205, 86, 0.2)',
                         tension: 0.1
                     }
                 ]
@@ -88,6 +92,20 @@
                         title: {
                             display: true,
                             text: 'Applicability Value'
+                        }
+                    }
+                },
+                plugins: {
+                    annotation: {
+                        annotations: {
+                            line1: {
+                                type: 'line',
+                                yMin: 50,
+                                yMax: 50,
+                                borderColor: 'rgb(255, 0, 0)',
+                                borderWidth: 1,
+                                borderDash: [10, 5]
+                            }
                         }
                     }
                 }
