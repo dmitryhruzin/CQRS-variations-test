@@ -9,14 +9,13 @@ describe('UserAggregate', () => {
         description: 'should return a js Object',
         getAggregate: () => {
           const aggregate = new UserAggregate()
-          const [event] = aggregate.create(new CreateUserCommand({ name: 'John Doe' }))
-          aggregate.replayUserCreatedV1(event)
+          aggregate.create(new CreateUserCommand({ name: 'John Doe' }))
           return aggregate
         },
         expected: { name: 'John Doe' }
       },
       {
-        description: 'should return an error for empty aggregate',
+        description: 'should return a js Object',
         getAggregate: () => new UserAggregate(),
         expectedError: 'Aggregate is empty'
       }
