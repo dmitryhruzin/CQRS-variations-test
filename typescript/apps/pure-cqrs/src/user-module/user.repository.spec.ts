@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals'
 import { EventStoreRepository } from '../event-store-module/event-store.repository.js'
+import { AggregateSnapshotRepository } from '../aggregate-module/aggregate-snapshot.repository.js'
 import knex from 'knex'
 import { Logger } from '@CQRS-variations-test/logger'
 import { UserRepository } from './user.repository.js'
@@ -10,16 +11,23 @@ describe('UserRepository', () => {
   describe('buildUserAggregate', () => {
     let repository: UserRepository
     let eventStore: EventStoreRepository
+    let snapshotRepository: AggregateSnapshotRepository
 
     beforeEach(() => {
       eventStore = new EventStoreRepository({} as knex.Knex, {} as Logger)
       eventStore.getEventsByAggregateId = jest
         .fn()
         .mockImplementation(() => [
-          { name: 'UserCreated', aggregateVersion: 1, body: { id: '123' } },
-          { name: 'UserNameUpdated', aggregateVersion: 2, body: { name: 'John Doe' } }
+          { name: 'UserNameUpdated', aggregateVersion: 2, version: 1, body: { name: 'John Doe' } }
         ]) as jest.Mocked<typeof eventStore.getEventsByAggregateId>
-      repository = new UserRepository(eventStore)
+      snapshotRepository = new AggregateSnapshotRepository({} as knex.Knex, {} as Logger)
+      snapshotRepository.getLatestSnapshotByAggregateId = jest.fn().mockImplementation(() => ({
+        id: '123',
+        aggregateVersion: 1,
+        aggregateId: '123',
+        state: { name: 'test' }
+      })) as jest.Mocked<typeof snapshotRepository.getLatestSnapshotByAggregateId>
+      repository = new UserRepository(eventStore, snapshotRepository)
     })
 
     const testCases = [
@@ -43,15 +51,16 @@ describe('UserRepository', () => {
       await repository.buildUserAggregate('2')
       await repository.buildUserAggregate('2')
 
-      expect(eventStore.getEventsByAggregateId).toHaveBeenNthCalledWith(1, '2', 0)
-      expect(eventStore.getEventsByAggregateId).toHaveBeenNthCalledWith(2, '2', 2)
+      expect(snapshotRepository.getLatestSnapshotByAggregateId).toHaveBeenCalledTimes(1)
     })
   })
 
   describe('save', () => {
     const eventStore = new EventStoreRepository({} as knex.Knex, {} as Logger)
     eventStore.saveEvents = jest.fn() as jest.Mocked<typeof eventStore.saveEvents>
-    const repository = new UserRepository(eventStore)
+    const snapshotRepository = new AggregateSnapshotRepository({} as knex.Knex, {} as Logger)
+    snapshotRepository.saveSnapshot = jest.fn() as jest.Mocked<typeof snapshotRepository.saveSnapshot>
+    const repository = new UserRepository(eventStore, snapshotRepository)
 
     const testCases = [
       {

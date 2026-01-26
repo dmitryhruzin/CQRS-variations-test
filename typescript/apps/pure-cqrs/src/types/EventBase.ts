@@ -5,6 +5,8 @@ export default class EventBase implements Event {
 
   public aggregateVersion: number
 
+  public version = 0
+
   constructor(payload: EventBasePayload) {
     this.aggregateId = payload.aggregateId
     this.aggregateVersion = payload.aggregateVersion
