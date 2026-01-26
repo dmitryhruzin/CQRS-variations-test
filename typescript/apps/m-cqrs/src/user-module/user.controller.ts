@@ -1,5 +1,6 @@
 import { Controller, HttpCode, Post, Get, Body, Param } from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
+import { InjectLogger, Logger } from '@CQRS-variations-test/logger'
 import { AcknowledgementResponse } from '../types/common.js'
 import {
   CreateUserRequest,
@@ -27,6 +28,7 @@ export class UserController {
   constructor(
     private commandBus: CommandBus,
     private readonly queryBus: QueryBus,
+    @InjectLogger(UserController.name) private readonly logger: Logger,
     private userMainRepository: UserMainRepository
   ) {}
 
@@ -50,6 +52,8 @@ export class UserController {
   @Post('/update-user-name')
   @HttpCode(200)
   async updateUserName(@Body() payload: UpdateUserNameRequest): Promise<AcknowledgementResponse> {
+    this.logger.info(`{"id":"${payload.id}","startTime":${Date.now()}}`)
+
     if (!payload.id || payload.id.trim() === '') {
       throw new Error('ID must be a non-empty string')
     }
