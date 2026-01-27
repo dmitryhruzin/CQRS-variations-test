@@ -10,7 +10,7 @@ export const maxParams = {
   expectedFrequencyDataRemovingPerSprint: 0.66,
   mvpDevTimeSprints: 8,
   assessmentPeriodSprints: 12,
-  modificationOld: 0.8,
+  modificationOld: 0.62,
   read: 0.9,
   write: 0.1
 }
@@ -25,7 +25,7 @@ export const minParams = {
   expectedFrequencyDataRemovingPerSprint: 0.5,
   mvpDevTimeSprints: 6,
   assessmentPeriodSprints: 12,
-  modificationOld: 0.8,
+  modificationOld: 0.62,
   read: 0.9,
   write: 0.1
 }
