@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common'
-import { Event, StoredEvent } from '../types/common.js'
+import knex from 'knex'
+import { InjectConnection } from 'nest-knexjs'
+import { Event } from '../types/common.js'
 import { UserAggregate } from './user.aggregate.js'
-import { UserCreatedV1, UserNameUpdatedV1 } from './events/index.js'
 import { EventStoreRepository } from '../event-store-module/event-store.repository.js'
-import { AggregateSnapshotRepository } from '../aggregate-module/aggregate-snapshot.repository.js'
-import { UserCreatedV1EventPayload, UserNameUpdatedV1EventPayload } from '../types/user.js'
 
 /**
  * Repository for managing user aggregates.
@@ -13,13 +12,25 @@ import { UserCreatedV1EventPayload, UserNameUpdatedV1EventPayload } from '../typ
  */
 @Injectable()
 export class UserRepository {
+  private tableName: string = 'aggregate-users'
+
   private cache: { [key: string]: UserAggregate } = {}
 
   // @ts-ignore
   constructor(
     private readonly eventStore: EventStoreRepository,
-    private readonly snapshotRepository: AggregateSnapshotRepository
+    @InjectConnection() private readonly knexConnection: knex.Knex
   ) {}
+
+  async onModuleInit() {
+    if (!(await this.knexConnection.schema.hasTable(this.tableName))) {
+      await this.knexConnection.schema.createTable(this.tableName, (table) => {
+        table.string('id').primary()
+        table.integer('version')
+        table.string('name')
+      })
+    }
+  }
 
   /**
    * Builds a user aggregate by ID.
@@ -33,50 +44,15 @@ export class UserRepository {
     }
 
     if (this.cache[id]) {
-      const agg = this.cache[id]
-
-      const events = await this.eventStore.getEventsByAggregateId(id, agg.version || 0)
-
-      const aggregate: UserAggregate = events.reduce(this.replayEvent, agg)
-
-      this.cache[id] = aggregate
-
-      return aggregate
+      return this.cache[id]
     }
 
-    const snapshot = await this.snapshotRepository.getLatestSnapshotByAggregateId<UserAggregate>(id)
-
-    const events = await this.eventStore.getEventsByAggregateId(id, snapshot?.aggregateVersion || 0)
-
-    const aggregate: UserAggregate = events.reduce(this.replayEvent, new UserAggregate(snapshot))
+    const userData = await this.knexConnection.table(this.tableName).where({ id }).first()
+    const aggregate = new UserAggregate(userData)
 
     this.cache[id] = aggregate
 
     return aggregate
-  }
-
-  replayEvent(agg: UserAggregate, event: StoredEvent) {
-    const eventPayload = {
-      ...event.body,
-      aggregateId: agg.id,
-      aggregateVersion: event.aggregateVersion
-    }
-    if (event.name === 'UserCreated') {
-      if (event.version === 1) {
-        agg.replayUserCreatedV1(new UserCreatedV1(eventPayload as UserCreatedV1EventPayload))
-      } else {
-        throw new Error(`UserCreated replay. Unprocesible event version ${event.version}`)
-      }
-    } else if (event.name === 'UserNameUpdated') {
-      if (event.version === 1) {
-        agg.replayUserNameUpdatedV1(new UserNameUpdatedV1(eventPayload as UserNameUpdatedV1EventPayload))
-      } else {
-        throw new Error(`UserNameUpdated replay. Unprocesible event version ${event.version}`)
-      }
-    } else {
-      throw new Error(`User aggregate replay. Unprocesible event ${event.name}`)
-    }
-    return agg
   }
 
   /**
@@ -89,21 +65,15 @@ export class UserRepository {
   async save(aggregate: UserAggregate, events: Event[]): Promise<boolean> {
     const aggregateId = aggregate.toJson().id
 
-    await this.eventStore.saveEvents(aggregateId, events)
+    const trx = await this.knexConnection.transaction()
+    try {
+      await this.eventStore.saveEvents(aggregateId, events, trx)
 
-    if ((aggregate.version + events.length) % 50 === 0) {
-      const lastAggregate = events.reduce(
-        (agg, e) =>
-          this.replayEvent(aggregate, {
-            body: e,
-            aggregateId,
-            aggregateVersion: agg.version,
-            version: e.version,
-            name: Object.getPrototypeOf(e.constructor).name
-          }),
-        aggregate
-      )
-      this.snapshotRepository.saveSnapshot(lastAggregate)
+      await trx(this.tableName).insert(aggregate.toJson()).onConflict('id').merge()
+      await trx.commit()
+    } catch (e) {
+      await trx.rollback()
+      throw new Error(`Can not save events. ${e}`)
     }
 
     this.cache[aggregateId] = aggregate
