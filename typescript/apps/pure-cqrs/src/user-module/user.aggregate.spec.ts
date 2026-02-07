@@ -10,7 +10,7 @@ describe('UserAggregate', () => {
         getAggregate: () => {
           const aggregate = new UserAggregate()
           const [event] = aggregate.create(new CreateUserCommand({ name: 'John Doe' }))
-          aggregate.replayUserCreated(event)
+          aggregate.replayUserCreatedV1(event)
           return aggregate
         },
         expected: { name: 'John Doe' }
