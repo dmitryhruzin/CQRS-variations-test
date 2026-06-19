@@ -1,16 +1,11 @@
 import DSAVCQRSES from './DSAV-CQRSES-v1.js'
-import { minParams, classicalCQRS, mCQRS, avgParams } from './data.js'
+import { minParams, avgParams, maxParams, classicalCQRS, mCQRS, mCQRSPlus } from './data.js'
 
-const dsav = new DSAVCQRSES(avgParams, classicalCQRS, mCQRS)
+const dsavMin = new DSAVCQRSES(minParams, classicalCQRS, mCQRS)
+const dsavAvg = new DSAVCQRSES(avgParams, classicalCQRS, mCQRS)
+const dsavMax = new DSAVCQRSES(maxParams, classicalCQRS, mCQRS)
 
-const evaluationResult01 = dsav.calculateApplicability(0.1, 0.9)
-const evaluationResult02 = dsav.calculateApplicability(0.2, 0.8)
-const evaluationResult05 = dsav.calculateApplicability(0.5, 0.5)
-console.table({ evaluationResult01, evaluationResult02, evaluationResult05 })
-
-const complexityEvaluation = dsav.calculateApplicability(0, 1)
-console.log(
-  'Save',
-  ((complexityEvaluation.mCQRSResult / complexityEvaluation.classicalCQRSResult) * 100 - 100).toFixed(2),
-  '%'
-)
+const evaluationResultMin = dsavMin.calculateApplicability()
+const evaluationResultAvg = dsavAvg.calculateApplicability()
+const evaluationResultMax = dsavMax.calculateApplicability()
+console.table({ evaluationResultMin, evaluationResultAvg, evaluationResultMax })

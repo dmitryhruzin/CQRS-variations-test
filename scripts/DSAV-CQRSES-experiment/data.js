@@ -10,9 +10,7 @@ export const maxParams = {
   expectedFrequencyDataRemovingPerSprint: 0.66,
   mvpDevTimeSprints: 8,
   assessmentPeriodSprints: 12,
-  modificationOld: 0.62,
-  read: 0.9,
-  write: 0.1
+  modificationOld: 0.62
 }
 
 export const minParams = {
@@ -25,9 +23,7 @@ export const minParams = {
   expectedFrequencyDataRemovingPerSprint: 0.5,
   mvpDevTimeSprints: 6,
   assessmentPeriodSprints: 12,
-  modificationOld: 0.62,
-  read: 0.9,
-  write: 0.1
+  modificationOld: 0.62
 }
 
 export const avgParams = {
@@ -42,17 +38,12 @@ export const avgParams = {
     (maxParams.expectedFrequencyDataRemovingPerSprint + minParams.expectedFrequencyDataRemovingPerSprint) / 2,
   mvpDevTimeSprints: (maxParams.mvpDevTimeSprints + minParams.mvpDevTimeSprints) / 2,
   assessmentPeriodSprints: (maxParams.assessmentPeriodSprints + minParams.assessmentPeriodSprints) / 2,
-  modificationOld: (maxParams.modificationOld + minParams.modificationOld) / 2,
-  read: (maxParams.read + minParams.read) / 2,
-  write: (maxParams.write + minParams.write) / 2
+  modificationOld: (maxParams.modificationOld + minParams.modificationOld) / 2
 }
 
 // Metrics
 
 export const classicalCQRS = {
-  // Performance
-  read: 5,
-  write: 2.93,
   // Complexity
   createDevelopment: 27.68,
   createModification: 26.18,
@@ -64,14 +55,11 @@ export const classicalCQRS = {
   queryModification: 17.5,
   projectionRebuildDevelopment: 38.83,
   projectionRebuildModification: 33.33,
-  changeEventTypes: 42.04,
+  changeEventTypes: 32,
   dataRemoving: 25.14
 }
 
 export const mCQRS = {
-  // Performance
-  read: 5,
-  write: 3.68,
   // Complexity
   createDevelopment: 27.35,
   createModification: 25.1,
@@ -85,4 +73,20 @@ export const mCQRS = {
   projectionRebuildModification: 26.69,
   changeEventTypes: 13.87,
   dataRemoving: 16
+}
+
+export const mCQRSPlus = {
+  // Complexity
+  createDevelopment: 25,
+  createModification: 23,
+  updateDevelopment: 30,
+  updateModification: 30,
+  eventualConsistencyDevelopment: 15,
+  eventualConsistencyModification: 10,
+  queryDevelopment: 10,
+  queryModification: 15,
+  projectionRebuildDevelopment: 20,
+  projectionRebuildModification: 22,
+  changeEventTypes: 11,
+  dataRemoving: 12
 }

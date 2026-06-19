@@ -5,7 +5,7 @@ export default class DSAVCQRSES {
     this.mCQRSMetrics = mCQRSMetrics
   }
 
-  calculateApplicability(perfCoef, complCoef) {
+  calculateApplicability() {
     const {
       create,
       update,
@@ -17,17 +17,11 @@ export default class DSAVCQRSES {
       mvpDevTimeSprints,
       assessmentPeriodSprints,
       // additionNew,
-      modificationOld,
-      read,
-      write
+      modificationOld
     } = this.params
 
     const classicalCQRS = this.classicalCQRSMetrics
     const mCQRS = this.mCQRSMetrics
-
-    // Normalization of model parameters
-
-    const isPerformanceNorm = { read, write }
 
     const isComplexity = {
       changeEventTypes: (mvpDevTimeSprints + assessmentPeriodSprints) * expectedFrequencyChangeEventTypesPerSprint,
@@ -45,8 +39,9 @@ export default class DSAVCQRSES {
       projectionRebuildModification: projections * modificationOld
     }
 
-    // console.log('isComplexity')
-    // console.table(Object.entries(isComplexity).reduce((acc, [key, value]) => ({ ...acc, [key]: value.toFixed(2) }), {}))
+    console.log('isComplexity')
+    console.table(isComplexity)
+    console.table(Object.entries(isComplexity).reduce((acc, [key, value]) => ({ ...acc, [key]: value.toFixed(2) }), {}))
 
     const isTotalComplexity = Object.values(isComplexity).reduce((sum, value) => sum + value, 0)
 
@@ -97,6 +92,7 @@ export default class DSAVCQRSES {
       }),
       {}
     )
+    console.log('combinedCQRSNorm')
     console.table(combinedCQRSNorm)
 
     // Calculations of IS case
@@ -104,26 +100,17 @@ export default class DSAVCQRSES {
     const isCaseComplexity = Object.keys(isComplexityNorm).reduce(
       (agg, key) => ({
         ...agg,
-        [key]: isComplexityNorm[key] * complCoef
-      }),
-      {}
-    )
-
-    const isCasePerformance = Object.keys(isPerformanceNorm).reduce(
-      (agg, key) => ({
-        ...agg,
-        [key]: isPerformanceNorm[key] * perfCoef
+        [key]: isComplexityNorm[key]
       }),
       {}
     )
 
     const complexitySum = Object.values(isCaseComplexity).reduce((sum, value) => sum + value, 0)
-    const performanceSum = Object.values(isCasePerformance).reduce((sum, value) => sum + value, 0)
-    if (Math.abs(complexitySum + performanceSum - 1) > 0.001) {
-      console.warn('Normalization failed isCase', complexitySum, performanceSum)
+    if (Math.abs(complexitySum - 1) > 0.001) {
+      console.warn('complexitySum Normalization failed isCase', complexitySum)
     }
 
-    const isCase = { ...isCaseComplexity, ...isCasePerformance }
+    const isCase = { ...isCaseComplexity }
     console.log('isCase')
     console.table(Object.entries(isCase).reduce((acc, [key, value]) => ({ ...acc, [key]: value.toFixed(4) }), {}))
 
