@@ -1,8 +1,9 @@
 import { v4 } from 'uuid'
 import { AggregateUserData } from '../types/user.js'
 import { Aggregate } from '../aggregate-module/aggregate.js'
-import { UserCreated, UserNameUpdated } from './events/index.js'
+import { UserCreatedV1, UserNameUpdatedV1 } from './events/index.js'
 import { CreateUserCommand, UpdateUserNameCommand } from './commands/index.js'
+import { Snapshot } from '../types/common.js'
 
 /**
  * Aggregate root for managing user state and events.
@@ -12,6 +13,18 @@ import { CreateUserCommand, UpdateUserNameCommand } from './commands/index.js'
  */
 export class UserAggregate extends Aggregate {
   private name: string
+
+  constructor(snapshot: Snapshot<UserAggregate> = null) {
+    if (!snapshot) {
+      super()
+    } else {
+      super(snapshot.aggregateId, snapshot.aggregateVersion)
+
+      if (snapshot.state) {
+        this.name = snapshot.state.name
+      }
+    }
+  }
 
   /**
    * Creates a new user aggregate.
@@ -24,7 +37,7 @@ export class UserAggregate extends Aggregate {
   create(command: CreateUserCommand) {
     this.id = v4()
 
-    const event = new UserCreated({
+    const event = new UserCreatedV1({
       id: this.id,
       name: command.name,
       aggregateId: this.id,
@@ -36,7 +49,7 @@ export class UserAggregate extends Aggregate {
     return [event]
   }
 
-  replayUserCreated(event: UserCreated) {
+  replayUserCreatedV1(event: UserCreatedV1) {
     this.id = event.id
     this.name = event.name
 
@@ -44,7 +57,7 @@ export class UserAggregate extends Aggregate {
   }
 
   updateName(command: UpdateUserNameCommand) {
-    const event = new UserNameUpdated({
+    const event = new UserNameUpdatedV1({
       previousName: this.name,
       name: command.name,
       aggregateId: this.id,
@@ -56,7 +69,7 @@ export class UserAggregate extends Aggregate {
     return [event]
   }
 
-  replayUserNameUpdated(event: UserNameUpdated) {
+  replayUserNameUpdatedV1(event: UserNameUpdatedV1) {
     this.name = event.name
 
     this.version += 1

@@ -6,11 +6,12 @@ import { EventStoreRepository } from '../../event-store-module/event-store.repos
 import { EventBus } from '@nestjs/cqrs/dist/event-bus.js'
 import { CreateUserCommand } from '../commands/index.js'
 import { UserWithOptionalId } from '../../types/user.js'
-import { UserCreated } from '../events/index.js'
+import { UserCreatedV1 } from '../events/index.js'
+import { AggregateSnapshotRepository } from '../../aggregate-module/aggregate-snapshot.repository.js'
 
 describe('CreateUserCommandHandler', () => {
   describe('execute', () => {
-    const events = [new UserCreated({ aggregateId: '123', aggregateVersion: 1, id: '1', name: 'John Doe' })]
+    const events = [new UserCreatedV1({ aggregateId: '123', aggregateVersion: 1, id: '1', name: 'John Doe' })]
 
     let repository: UserRepository
     let aggregate: { create: (user: UserWithOptionalId) => Event[]; commit: () => {} }
@@ -18,7 +19,7 @@ describe('CreateUserCommandHandler', () => {
     let handler: CreateUserCommandHandler
 
     beforeEach(() => {
-      repository = new UserRepository({} as EventStoreRepository)
+      repository = new UserRepository({} as EventStoreRepository, {} as AggregateSnapshotRepository)
       repository.save = jest.fn() as jest.Mocked<typeof repository.save>
       aggregate = {
         create: jest.fn().mockImplementation(() => events) as jest.Mocked<typeof aggregate.create>,

@@ -12,7 +12,7 @@ describe('GetUserByIdMainQueryHandler', () => {
     let handler: GetUserByIdMainQueryHandler
 
     beforeEach(() => {
-      repository = new UserMainRepository({} as knex.Knex, {} as Logger)
+      repository = new UserMainRepository({} as EventStoreRepository, {} as knex.Knex, {} as Logger)
       repository.getById = jest.fn() as jest.Mocked<typeof repository.getById>
       handler = new GetUserByIdMainQueryHandler(repository)
     })

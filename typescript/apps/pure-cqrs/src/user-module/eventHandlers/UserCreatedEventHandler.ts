@@ -1,5 +1,5 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs'
-import { UserCreated } from '../events/index.js'
+import { UserCreatedV1 } from '../events/index.js'
 import { UserMainRepository } from '../projections/user-main.repository.js'
 
 /**
@@ -8,8 +8,8 @@ import { UserMainRepository } from '../projections/user-main.repository.js'
  * @class UserCreatedEventHandler
  * @implements {IEventHandler<UserCreatedV1>}
  */
-@EventsHandler(UserCreated)
-export class UserCreatedEventHandler implements IEventHandler<UserCreated> {
+@EventsHandler(UserCreatedV1)
+export class UserCreatedEventHandler implements IEventHandler<UserCreatedV1> {
   constructor(private repository: UserMainRepository) {}
 
   /**
@@ -17,7 +17,7 @@ export class UserCreatedEventHandler implements IEventHandler<UserCreated> {
    *
    * @param {UserCreatedV1} event - The user created event.
    */
-  async handle(event: UserCreated) {
+  async handle(event: UserCreatedV1) {
     await this.repository.save(event.toJson())
   }
 }
