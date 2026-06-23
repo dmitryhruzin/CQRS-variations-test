@@ -1,4 +1,5 @@
 import { jest } from '@jest/globals'
+import knex from 'knex'
 import { UpdateUserNameCommandHandler } from './UpdateUserNameCommandHandler.js'
 import { EventPublisher } from '@nestjs/cqrs'
 import { UserRepository } from '../user.repository.js'
@@ -6,7 +7,6 @@ import { EventStoreRepository } from '../../event-store-module/event-store.repos
 import { EventBus } from '@nestjs/cqrs/dist/event-bus.js'
 import { UpdateUserNameCommand } from '../commands/index.js'
 import { UserNameUpdatedV1 } from '../events/index.js'
-import { AggregateSnapshotRepository } from '../../aggregate-module/aggregate-snapshot.repository.js'
 
 describe('UpdateUserNameCommandHandler', () => {
   describe('execute', () => {
@@ -20,7 +20,7 @@ describe('UpdateUserNameCommandHandler', () => {
     let handler: UpdateUserNameCommandHandler
 
     beforeEach(() => {
-      repository = new UserRepository({} as EventStoreRepository, {} as AggregateSnapshotRepository)
+      repository = new UserRepository({} as EventStoreRepository, {} as knex.Knex)
       repository.save = jest.fn() as jest.Mocked<typeof repository.save>
       repository.buildUserAggregate = jest.fn() as jest.Mocked<typeof repository.buildUserAggregate>
       aggregate = {

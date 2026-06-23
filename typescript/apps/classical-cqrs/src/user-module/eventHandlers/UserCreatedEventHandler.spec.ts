@@ -1,7 +1,6 @@
 import { jest } from '@jest/globals'
 import { UserCreatedEventHandler } from './UserCreatedEventHandler.js'
 import { UserMainRepository } from '../projections/user-main.repository.js'
-import { EventStoreRepository } from '../../event-store-module/event-store.repository.js'
 import knex from 'knex'
 import { UserCreatedV1 } from '../events/index.js'
 import { Logger } from '@CQRS-variations-test/logger'
@@ -12,7 +11,7 @@ describe('UserCreatedEventHandler', () => {
     let handler: UserCreatedEventHandler
 
     beforeEach(() => {
-      repository = new UserMainRepository({} as EventStoreRepository, {} as knex.Knex, {} as Logger)
+      repository = new UserMainRepository({} as knex.Knex, {} as Logger)
       repository.save = jest.fn() as jest.Mocked<typeof repository.save>
       handler = new UserCreatedEventHandler(repository)
     })
