@@ -1,4 +1,4 @@
-import { AggregateMetadata, EventBasePayload } from './common.js'
+import { EventBasePayload, AggregateMetadata } from './common.js'
 
 /**
  * Type representing a user.
@@ -11,9 +11,27 @@ import { AggregateMetadata, EventBasePayload } from './common.js'
 export type User = {
   id: string
   name: string
-  version?: number
 }
 
+/**
+ * Type representing user aggregate data.
+ * @typedef {Object} AggregateUserData
+ * @property {string} id - The user's ID.
+ * @property {string} name - The user's name.
+ * @property {number} version - The aggregate version.
+ * @property {boolean} isDeleted - Indicates if the aggregate is deleted.
+ *
+ * Represents user data combined with aggregate metadata.
+ */
+export type AggregateUserData = User & AggregateMetadata
+
+/**
+ * Type representing the payload for updating a user.
+ * @typedef {Object} UserUpdatePayload
+ * @property {string} [name] - The new name for the user (optional).
+ *
+ * Represents the data that can be used to update a user.
+ */
 export type UserUpdatePayload = {
   version: number
   name?: string
@@ -32,8 +50,6 @@ export type UserMain = {
   name: string
 }
 
-export type AggregateUserData = AggregateMetadata & User
-
 /**
  * Type representing a user with an optional ID.
  * @typedef {Object} UserWithOptionalId
@@ -44,9 +60,33 @@ export type AggregateUserData = AggregateMetadata & User
  */
 export type UserWithOptionalId = Omit<User, 'id'> & { id?: string }
 
-export type UserCreatedEventPayload = EventBasePayload & User
+/**
+ * Type representing the payload for a UserCreatedV1 event.
+ * @typedef {Object} UserCreatedV1EventPayload
+ * @property {string} id - The user's ID.
+ * @property {string} name - The user's name.
+ * @property {string} eventId - The event's ID.
+ * @property {string} eventName - The event's name.
+ * @property {number} eventVersion - The event's version.
+ * @property {Date} occurredAt - The event's occurrence timestamp.
+ *
+ * Represents the payload for a UserCreatedV1 event, including user details and event metadata.
+ */
+export type UserCreatedV1EventPayload = EventBasePayload & User
 
-export type UserNameUpdatedEventPayload = EventBasePayload & {
+/**
+ * Type representing the payload for a UserNameUpdatedV1 event.
+ * @typedef {Object} UserNameUpdatedV1EventPayload
+ * @property {string} previousName - The user's previous name.
+ * @property {string} name - The user's new name.
+ * @property {string} eventId - The event's ID.
+ * @property {string} eventName - The event's name.
+ * @property {number} eventVersion - The event's version.
+ * @property {Date} occurredAt - The event's occurrence timestamp.
+ *
+ * Represents the payload for a UserNameUpdatedV1 event, including the previous and new names, and event metadata.
+ */
+export type UserNameUpdatedV1EventPayload = EventBasePayload & {
   previousName: string
   name: string
 }
@@ -62,6 +102,14 @@ export type CreateUserRequest = {
   name: string
 }
 
+/**
+ * Type representing an update user name request.
+ * @typedef {Object} UpdateUserNameRequest
+ * @property {string} id - The ID of the user to update.
+ * @property {string} name - The new name for the user.
+ *
+ * Represents the data required to update a user's name.
+ */
 export type UpdateUserNameRequest = {
   id: string
   name: string

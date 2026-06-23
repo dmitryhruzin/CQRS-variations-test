@@ -1,7 +1,6 @@
 import { jest } from '@jest/globals'
 import { GetUsersMainQueryHandler } from './GetUsersMainQueryHandler.js'
 import { UserMainRepository } from '../projections/user-main.repository.js'
-import { EventStoreRepository } from '../../event-store-module/event-store.repository.js'
 import knex from 'knex'
 import { Logger } from '@CQRS-variations-test/logger'
 
