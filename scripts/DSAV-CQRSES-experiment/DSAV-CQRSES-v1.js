@@ -62,7 +62,7 @@ export default class DSAVCQRSES {
     const classicalCQRSNorm = Object.keys(classicalCQRS).reduce(
       (agg, key) => ({
         ...agg,
-        [key]: 1 / classicalCQRS[key] / (1 / classicalCQRS[key] + 1 / mCQRS[key])
+        [key]: classicalCQRS[key] / (classicalCQRS[key] + mCQRS[key])
       }),
       {}
     )
@@ -70,7 +70,7 @@ export default class DSAVCQRSES {
     const mCQRSNorm = Object.keys(classicalCQRS).reduce(
       (agg, key) => ({
         ...agg,
-        [key]: 1 / mCQRS[key] / (1 / classicalCQRS[key] + 1 / mCQRS[key])
+        [key]: mCQRS[key] / (classicalCQRS[key] + mCQRS[key])
       }),
       {}
     )
