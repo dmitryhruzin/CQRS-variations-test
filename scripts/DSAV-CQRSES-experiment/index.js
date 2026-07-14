@@ -1,5 +1,5 @@
 import DSAVCQRSES from './DSAV-CQRSES-v1.js'
-import { minParams, avgParams, maxParams, classicalCQRS, mCQRS, mCQRSPlus } from './data.js'
+import { minParams, avgParams, maxParams, expParams, classicalCQRS, mCQRS, mCQRSPlus } from './data.js'
 
 const dsavMin = new DSAVCQRSES(minParams, classicalCQRS, mCQRS)
 const dsavAvg = new DSAVCQRSES(avgParams, classicalCQRS, mCQRS)

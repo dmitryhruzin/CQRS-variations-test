@@ -26,6 +26,19 @@ export const minParams = {
   modificationOld: 0.62
 }
 
+export const expParams = {
+  create: 7,
+  update: 31,
+  eventualConsistency: 46,
+  queries: 20,
+  projections: 12,
+  expectedFrequencyChangeEventTypesPerSprint: 1,
+  expectedFrequencyDataRemovingPerSprint: 0.5,
+  mvpDevTimeSprints: 6,
+  assessmentPeriodSprints: 12,
+  modificationOld: 0.62
+}
+
 export const avgParams = {
   create: (maxParams.create + minParams.create) / 2,
   update: (maxParams.update + minParams.update) / 2,
