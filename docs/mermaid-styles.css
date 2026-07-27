@@ -1,0 +1,42 @@
+/* Global Mermaid Styles */
+.mermaid {
+  font-family: 'Times New Roman', serif !important;
+  font-size: 14px !important;
+}
+
+/* Sequence Diagram Specific Styles */
+.mermaid .actor {
+  font-family: 'Times New Roman', serif !important;
+  font-size: 14px !important;
+}
+
+.mermaid .messageText {
+  font-family: 'Times New Roman', serif !important;
+  font-size: 14px !important;
+}
+
+.mermaid .labelText {
+  font-family: 'Times New Roman', serif !important;
+  font-size: 14px !important;
+}
+
+.mermaid .loopText {
+  font-family: 'Times New Roman', serif !important;
+  font-size: 14px !important;
+}
+
+.mermaid .noteText {
+  font-family: 'Times New Roman', serif !important;
+  font-size: 14px !important;
+}
+
+/* Flowchart Styles */
+.mermaid .node text {
+  font-family: 'Times New Roman', serif !important;
+  font-size: 14px !important;
+}
+
+.mermaid .edgeLabel {
+  font-family: 'Times New Roman', serif !important;
+  font-size: 14px !important;
+}
