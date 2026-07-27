@@ -23,7 +23,11 @@ const results = {}
 Array.from({ length: STEPS }, (_, i) => i / (STEPS - 1)).forEach((t) => {
   const params = interpolateParams(t)
   const dsav = new DSAVCQRSES(params, classicalCQRS, mCQRS)
-  results[`${Math.round(t * 100)}%`] = dsav.calculateApplicability()
+  const complexity = dsav.calculateApplicability()
+  results[`${Math.round(t * 100)}%`] = {
+    ...complexity,
+    ratio: Math.round((complexity.classicalCQRSResult / complexity.mCQRSResult) * 1000) / 1000
+  }
 })
 
 console.table(results)
