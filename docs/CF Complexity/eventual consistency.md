@@ -89,11 +89,11 @@ flowchart TD
 |-------|---------------------------------------|---------------|--------|
 | BCS1  | Take the Projection from ProjectionDB | function call | 2      |
 | BCS2  | Determine event version               | branch        | 2      |
-| BCS3  | Apply the event to the Projection    | sequence      | 1      |
+| BCS3  | Apply the event to the Projection     | sequence      | 1      |
 | BCS4  | Version mismatch Error                | branch        | 2      |
-| BCS5  | Save the Projection to Projection DB | function call | 2      |
-| BCS6  | Get Snapshot from the SnapshotDB     | function call | 2      |
-| BCS7  | Map Snapshot to Projection           | sequence      | 1      |
+| BCS5  | Save the Projection to Projection DB  | function call | 2      |
+| BCS6  | Get Snapshot from the SnapshotDB      | function call | 2      |
+| BCS7  | Map Snapshot to Projection            | sequence      | 1      |
 | Total |                                       |               | 12     |
 
 **Implementation Complexity:** 1 × 12 = **12**  

@@ -1,7 +1,5 @@
 # Migration Time
 
-46 минут на миграцию 1 create, 3 update, 4 eventual consistency и 1 projection rebuild. И второй раз потратил 67 минут на миграцию 1 create, 12 update, 9 eventual consistency и 1 projection rebuild
-
 | Процесс              | Всего | Экз. | Среднее | CF | Импл mCQRS | Импл Classical CQRS |
 |----------------------|-------|------|---------|----|------------|---------------------|
 | create               | 13    | 2    | 6.5     | 4  | 18         | 31.83               |

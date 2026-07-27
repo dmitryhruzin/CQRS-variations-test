@@ -17,7 +17,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  classDef mod stroke:#0f0
+  classDef mod stroke:#f00
   A1@{ shape: lean-l, label: "Aggregate" }
   A2@{ shape: lean-l, label: "Events" }
   A1 --> B["Update cache (1)"]
@@ -31,15 +31,15 @@ flowchart TD
 
 **Input/Output Parameters:** Aggregate, Events (2)
 
-| ID    | Name                             | Type          | Weight |
-|-------|----------------------------------|---------------|--------|
-| BCS1  | Save Aggregate to the SnapshotDB | function call | 2      |
-| Total |                                  |               | 2      |
+| ID    | Name                             | Type   | Weight |
+|-------|----------------------------------|--------|--------|
+| BCS1  | Save Aggregate to the SnapshotDB | remove | 1      |
+| Total |                                  |        | 1      |
 
-**Migration Complexity:** 2 × 2 = **4**  
+**Migration Complexity:** 2 × 1 = **2**  
 
 ---
 
 ## Total
 
-4
+2

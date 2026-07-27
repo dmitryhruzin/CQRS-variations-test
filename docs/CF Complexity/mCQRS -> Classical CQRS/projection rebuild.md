@@ -4,7 +4,7 @@
 
 ```mermaid
 flowchart TD
-  classDef mod stroke:#f00
+  classDef mod stroke:#0f0
   A@{ shape: lean-l, label: "Request" }
   A --> B["Fetch Projection metadata from DB: Event types that affect projection etc. (2)"]:::mod
   B --> D@{ shape: lean-l, label: "Projection Metadata" }
@@ -14,10 +14,10 @@ flowchart TD
 
 | ID    | Name                                                                       | Type          | Weight |
 |-------|----------------------------------------------------------------------------|---------------|--------|
-| BCS1  | Fetch Projection metadata from DB: Event types that affect projection etc. | remove        | 1      |
-| Total |                                                                            |               | 1      |
+| BCS1  | Fetch Projection metadata from DB: Event types that affect projection etc. | function call | 2      |
+| Total |                                                                            |               | 2      |
 
-**Migration Complexity:** 2 × 1 = **2**  
+**Migration Complexity:** 2 × 2 = **4**  
 
 ---
 
@@ -25,7 +25,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  classDef mod stroke:#0f0
+  classDef mod stroke:#f00
   A@{ shape: lean-l, label: "Projection Metadata" }
   A --> B["Fetch snapshot from Projection SnapshotDB (2)"]
   B --> D@{ shape: lean-l, label: "Projection Snapshot" }
@@ -36,7 +36,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  classDef mod stroke:#0f0
+  classDef mod stroke:#f00
   A@{ shape: lean-l, label: "Request" }
   A --> B["Build query for fetching the Aggregate Snapshot (1)"]:::mod
   B --> C["Fetch snapshot from Projection SnapshotDB (2)"]
@@ -47,7 +47,7 @@ flowchart TD
 
 | ID    | Name                                            | Type          | Weight |
 |-------|-------------------------------------------------|---------------|--------|
-| BCS1  | Build query for fetching the Aggregate Snapshot | sequence      | 1      |
+| BCS1  | Build query for fetching the Aggregate Snapshot | remove        | 1      |
 | Total |                                                 |               | 1      |
 
 **Migration Complexity:** 2 × 1 = **2**  
@@ -58,7 +58,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  classDef mod stroke:#f00
+  classDef mod stroke:#0f0
   A@{ shape: lean-l, label: "Projection Metadata" }
   A --> B["Fetch Events from the Event Store (2)"]:::mod
   B --> D@{ shape: lean-l, label: "Events" }
@@ -69,10 +69,10 @@ flowchart TD
 
 | ID    | Name                                | Type          | Weight |
 |-------|-------------------------------------|---------------|--------|
-| BCS1  | Fetch Events from the Event Store   | remove        | 1      |
-| Total |                                     |               | 1      |
+| BCS1  | Fetch Events from the Event Store   | function call | 2      |
+| Total |                                     |               | 2      |
 
-**Migration Complexity:** 2 × 1 = **2**  
+**Migration Complexity:** 2 × 2 = **4**  
 
 ---
 
@@ -80,7 +80,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  classDef mod stroke:#f00
+  classDef mod stroke:#0f0
   A1@{ shape: lean-l, label: "Events" }
   A2@{ shape: lean-l, label: "Projection Snapshot" }
   A1 --> B["Create the Projection instance (1)"]
@@ -95,19 +95,19 @@ flowchart TD
 
 **Input/Output Parameters:** Events, Projection Snapshot, Projection (3)
 
-| ID    | Name                                                  | Type     | Weight |
-|-------|-------------------------------------------------------|----------|--------|
-| BCS1  | Fill the Projection with the Projection Snapshot data | remove   | 1      |
-| BCS2  | For each Event                                        | remove   | 1      |
-| BCS3  | Define the type of the Event                          | remove   | 1      |
-| BCS4  | Apply the Event onto the Projection                   | remove   | 1      |
-| Total |                                                       |          | 4      |
+| ID    | Name                                                  | Type      | Weight |
+|-------|-------------------------------------------------------|-----------|--------|
+| BCS1  | Fill the Projection with the Projection Snapshot data | sequence  | 1      |
+| BCS2  | For each Event                                        | iteration | 3      |
+| BCS3  | Define the type of the Event                          | branch    | 2      |
+| BCS4  | Apply the Event onto the Projection                   | sequence  | 1      |
+| Total |                                                       |           | 7      |
 
 ## Build New Projection (mCQRS)
 
 ```mermaid
 flowchart TD
-  classDef mod stroke:#0f0
+  classDef mod stroke:#f00
   A@{ shape: lean-l, label: "Aggregate Snapshot" }
   A --> B["Create the Projection instance (1)"]
   B --> C["Fill the Projection with the Aggregate Snapshot data (1)"]:::mod
@@ -118,13 +118,13 @@ flowchart TD
 
 | ID    | Name                                                  | Type     | Weight |
 |-------|-------------------------------------------------------|----------|--------|
-| BCS5  | Fill the Projection with the Aggregate Snapshot data  | sequence | 1      |
+| BCS5  | Fill the Projection with the Aggregate Snapshot data  | remove   | 1      |
 | Total |                                                       |          | 1      |
 
-**Migration Complexity:** 2 × 1 + 3 × 4 = **14**
+**Migration Complexity:** 2 × 1 + 3 × 7 = **23**
 
 ---
 
 ## Total
 
-2 + 2 + 2 + 14 = 20
+4 + 2 + 4 + 23 = 33
