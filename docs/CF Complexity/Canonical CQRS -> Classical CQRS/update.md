@@ -25,8 +25,9 @@ flowchart TD
   A@{ shape: lean-l, label: "Command" }
   A --> B["Get from cache (1)"]
   B --> C["Get Snapshot from SnapshotDB (2)"]:::mod
-  C --> D["Create new Aggregate instance from snapshot (1)"]:::mod
-  D --> E["Get Events from the Event Store (2)"]
+  C --> D["Create new Aggregate instance (1)"]
+  D --> D2["Map the Snapshot to the Aggregate Classical CQRS (1)"]:::mod
+  D2 --> E["Get Events from the Event Store (2)"]
   E --> F{{"For each event in Events (3)"}}
   F --> G["Define an event type (2)"]
   G --> H["Apply an event on the Aggregate (1)"]
@@ -37,11 +38,11 @@ flowchart TD
 
 **Input/Output Parameters:** Command, Aggregate (2)
 
-| ID    | Name                                        | Type          | Weight |
-|-------|---------------------------------------------|---------------|--------|
-| BCS1  | Get Snapshot from SnapshotDB                | function call | 2      |
-| BCS2  | Create new Aggregate instance from snapshot | sequence      | 1      |
-| Total |                                             |               | 3      |
+| ID    | Name                                             | Type          | Weight |
+|-------|--------------------------------------------------|---------------|--------|
+| BCS1  | Get Snapshot from SnapshotDB                     | function call | 2      |
+| BCS2  | Map the Snapshot to the Aggregate Classical CQRS | sequence      | 1      |
+| Total |                                                  |               | 3      |
 
 **Migration Complexity:** 2 × 3 = **6**  
 

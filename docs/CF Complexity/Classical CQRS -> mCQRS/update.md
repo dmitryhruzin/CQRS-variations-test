@@ -9,7 +9,8 @@ flowchart TD
   A --> B["Get from cache (1)"]
   B --> C["Get Snapshot from SnapshotDB (2)"]
   C --> D["Create new Aggregate instance (1)"]
-  D --> E["Get Events from the Event Store (2)"]:::mod
+  D --> D2["Map the Snapshot to the Aggregate Classical CQRS (1)"]:::mod
+  D2 --> E["Get Events from the Event Store (2)"]:::mod
   E --> F{{"For each event in Events (3)"}}:::mod
   F --> G["Define an event type (2)"]:::mod
   G --> H["Apply an event on the Aggregate (1)"]:::mod
@@ -27,23 +28,24 @@ flowchart TD
   A --> B["Get from cache (1)"]
   B --> C["Get Snapshot from SnapshotDB (2)"]
   C --> D["Create new Aggregate instance (1)"]
-  D --> E["Apply the Snapshot on the Aggregate (1)"]:::mod
+  D --> E["Map the Snapshot to the Aggregate mCQRS (1)"]:::mod
   E --> I@{ shape: lean-l, label: "Aggregate" }
   E --> J@{ shape: lean-l, label: "Command" }
 ```
 
 **Input/Output Parameters:** Command, Aggregate (2)
 
-| ID    | Name                                  | Type          | Weight |
-|-------|---------------------------------------|---------------|--------|
-| BCS1  | Get Events from the Event Store.      | remove        | 1      |
-| BCS2  | For each event in Events.             | remove        | 1      |
-| BCS3  | Define an event type                  | remove        | 1      |
-| BCS4  | Apply an event on the Aggregate       | remove        | 1      |
-| BCS5  | Apply the Snapshot on the Aggregate   | sequence      | 1      |
-| Total |                                       |               | 5      |
+| ID    | Name                                             | Type          | Weight |
+|-------|--------------------------------------------------|---------------|--------|
+| BCS1  | Map the Snapshot to the Aggregate Classical CQRS | remove        | 1      |
+| BCS2  | Get Events from the Event Store                  | remove        | 1      |
+| BCS3  | For each event in Events                         | remove        | 1      |
+| BCS4  | Define an event type                             | remove        | 1      |
+| BCS5  | Apply an event on the Aggregate                  | remove        | 1      |
+| BCS6  | Map the Snapshot to the Aggregate mCQRS          | sequence      | 1      |
+| Total |                                                  |               | 6      |
 
-**Migration Complexity:** 2 × 5 = **10**  
+**Migration Complexity:** 2 × 6 = **12**  
 
 ---
 
@@ -96,4 +98,4 @@ flowchart TD
 
 ## Total
 
-10 + 10 = 20
+12 + 10 = 22

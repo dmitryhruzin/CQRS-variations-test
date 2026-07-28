@@ -78,7 +78,8 @@ flowchart TD
   A --> B["Get from cache (1)"]
   B --> C["Get Snapshot from SnapshotDB (2)"]
   C --> D["Create new Aggregate instance (1)"]
-  D:::mod --> E["Get Events from the Event Store (2)"]
+  D:::mod --> D2["Map the Snapshot to the Aggregate Classical CQRS (1)"]
+  D2:::mod --> E["Get Events from the Event Store (2)"]
   E --> F{{"For each event in Events (3)"}}
   F --> G["Define an event type (2)"]
   G:::mod --> H["Apply an event on the Aggregate (1)"]
@@ -89,19 +90,20 @@ flowchart TD
 
 **Input/Output Parameters:** Command, Aggregate (2)
 
-| ID    | Name                                | Type          | Weight |
-|-------|-------------------------------------|---------------|--------|
-| BCS1  | Get from cache                      | sequence      | 1      |
-| BCS2  | Get Snapshot from SnapshotDB        | function call | 2      |
-| BCS3  | Create new Aggregate instance       | sequence      | 1      |
-| BCS4  | Get Events from the Event Store     | function call | 2      |
-| BCS5  | For each event in Events            | iteration     | 3      |
-| BCS6  | Define an event type                | branch        | 2      |
-| BCS7  | Apply an event on the Aggregate     | sequence      | 1      |
-| Total |                                     |               | 12     |
+| ID    | Name                                             | Type          | Weight |
+|-------|--------------------------------------------------|---------------|--------|
+| BCS1  | Get from cache                                   | sequence      | 1      |
+| BCS2  | Get Snapshot from SnapshotDB                     | function call | 2      |
+| BCS3  | Create new Aggregate instance                    | sequence      | 1      |
+| BCS4  | Map the Snapshot to the Aggregate Classical CQRS | sequence      | 1      |
+| BCS5  | Get Events from the Event Store                  | function call | 2      |
+| BCS6  | For each event in Events                         | iteration     | 3      |
+| BCS7  | Define an event type                             | branch        | 2      |
+| BCS8  | Apply an event on the Aggregate                  | sequence      | 1      |
+| Total |                                                  |               | 13     |
 
-**Implementation Complexity:** 2 × 12 = **24**  
-**Modification Complexity:** 2 × 4 = **8**
+**Implementation Complexity:** 2 × 13 = **26**  
+**Modification Complexity:** 2 × 5 = **10**
 
 ---
 
@@ -114,20 +116,20 @@ flowchart TD
   A --> B["Get from cache (1)"]
   B --> C["Get Snapshot from SnapshotDB (2)"]
   C --> D["Create new Aggregate instance (1)"]
-  D:::mod --> E["Apply the Snapshot on the Aggregate (1)"]
+  D:::mod --> E["Map the Snapshot to the Aggregate mCQRS (1)"]
   E:::mod --> I@{ shape: lean-l, label: "Aggregate" }
   E --> J@{ shape: lean-l, label: "Command" }
 ```
 
 **Input/Output Parameters:** Command, Aggregate (2)
 
-| ID    | Name                                  | Type          | Weight |
-|-------|---------------------------------------|---------------|--------|
-| BCS1  | Get from cache                        | sequence      | 1      |
-| BCS2  | Get Snapshot from SnapshotDB          | function call | 2      |
-| BCS3  | Create new Aggregate instance         | sequence      | 1      |
-| BCS4  | Apply the Snapshot on the Aggregate   | sequence      | 1      |
-| Total |                                       |               | 5      |
+| ID    | Name                                    | Type          | Weight |
+|-------|-----------------------------------------|---------------|--------|
+| BCS1  | Get from cache                          | sequence      | 1      |
+| BCS2  | Get Snapshot from SnapshotDB            | function call | 2      |
+| BCS3  | Create new Aggregate instance           | sequence      | 1      |
+| BCS4  | Map the Snapshot to the Aggregate mCQRS | sequence      | 1      |
+| Total |                                         |               | 5      |
 
 **Implementation Complexity:** 2 × 5 = **10**  
 **Modification Complexity:** 2 × 2 = **4**
