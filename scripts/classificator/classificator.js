@@ -90,17 +90,26 @@ export default class Classificator {
     return total
   }
 
-  calculateMigrationComplexity(realizationSource, designSource) {
+  calculateMigrationComplexity(designSource, realizationSource) {
     const realization = realizationSource.map((m) => ({
       ...m,
       complexity: this.getClassValue(m.complexity, this.realizationMaxValue)
     }))
-    console.log(realization)
 
     const design = designSource.map((m) => ({
       ...m,
       complexity: this.getClassValue(m.complexity, this.designMaxValue)
     }))
-    console.log(design)
+
+    const total = design.reduce((agg, { activityName, complexity }) => {
+      const realizationActivity = realization.find((r) => r.activityName === activityName)
+
+      return {
+        ...agg,
+        [activityName]: Math.round((0.5 * complexity + 0.5 * realizationActivity.complexity) * 100) / 100
+      }
+    }, {})
+
+    return total
   }
 }
