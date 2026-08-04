@@ -186,10 +186,12 @@ flowchart TD
   A@{ shape: lean-l, label: "Projection" }
   A --> B["Save projection to the database (2)"]
   A --> C["Save new projection snapshot to the database (2)"]
-  B --> CP["Save the rebuild checkpoint (2)"]
-  C --> CP
+  B --> CF{"Both writes succeeded (2)"}
+  C --> CF
+  CF --Yes--> CP["Save the rebuild checkpoint (2)"]
   CP --> LG["Log the projection rebuild completion (2)"]
   LG --> D@{ shape: dbl-circ, label: "End" }
+  CF --"No"--> D
 ```
 
 **Input/Output Parameters:** Projection (1)
@@ -198,9 +200,10 @@ flowchart TD
 |-------|----------------------------------------------|---------------|--------|
 | BCS1  | Save projection to the database              | function call | 2      |
 | BCS2  | Save new projection snapshot to the database | function call | 2      |
-| BCS3  | Save the rebuild checkpoint                  | function call | 2      |
-| BCS4  | Log the projection rebuild completion        | function call | 2      |
-| Total |                                              |               | 8      |
+| BCS3  | Both writes succeeded                        | branch        | 2      |
+| BCS4  | Save the rebuild checkpoint                  | function call | 2      |
+| BCS5  | Log the projection rebuild completion        | function call | 2      |
+| Total |                                              |               | 10     |
 
-**Implementation Complexity:** 1 × 8 = **8**  
+**Implementation Complexity:** 1 × 10 = **10**  
 **Modification Complexity:** 1 × 0 = **0**

@@ -133,8 +133,10 @@ flowchart TD
   A2 --> B
   B --> C["Save Events to the Event Store (2)"]
   B --> D["Save Aggregate to the SnapshotDB (2)"]
-  C --> L["Log the persisted Events (2)"]
-  D --> L
+  C --> CF{"Both writes succeeded (2)"}
+  D --> CF
+  CF --Yes--> L["Log the persisted Events (2)"]
+  CF --"No"--> X@{ shape: dbl-circ, label: "End" }
   L --> E@{ shape: lean-l, label: "Events" }
 ```
 
@@ -145,10 +147,11 @@ flowchart TD
 | BCS1  | Update cache                     | sequence      | 1      |
 | BCS2  | Save Events to the Event Store   | function call | 2      |
 | BCS3  | Save Aggregate to the SnapshotDB | function call | 2      |
-| BCS4  | Log the persisted Events         | function call | 2      |
-| Total |                                  |               | 7      |
+| BCS4  | Both writes succeeded            | branch        | 2      |
+| BCS5  | Log the persisted Events         | function call | 2      |
+| Total |                                  |               | 9      |
 
-**Implementation Complexity:** 2 × 7 = **14**  
+**Implementation Complexity:** 2 × 9 = **18**  
 **Modification Complexity:** 2 × 0 = **0**
 
 ---
