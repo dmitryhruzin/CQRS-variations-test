@@ -12,7 +12,7 @@ export const classicalCQRSdesignComplexity = [
   { activityName: 'Create command', complexity: 2 },
   { activityName: 'Validate command', complexity: 1 },
   { activityName: 'Route command', complexity: 1 },
-  { activityName: 'Fetch aggregate', complexity: 8 },
+  { activityName: 'Fetch aggregate', complexity: 10 },
   { activityName: `Update aggregate’s state`, complexity: 6 },
   { activityName: 'Save aggregate', complexity: 6 },
   { activityName: 'Dispatch events', complexity: 0 }

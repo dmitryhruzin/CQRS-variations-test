@@ -1,19 +1,19 @@
 export const mCQRSdesignComplexity = [
-  { activityName: 'Process request', complexity: 1 },
+  { activityName: 'Process request', complexity: 7 },
   { activityName: 'Receive information about projection', complexity: 0 },
   { activityName: 'Fetch snapshot', complexity: 6 },
   { activityName: 'Fetch events', complexity: 0 },
   { activityName: `Build projection`, complexity: 4 },
-  { activityName: 'Update the DB', complexity: 4 }
+  { activityName: 'Update the DB', complexity: 10 }
 ]
 
 export const classicalCQRSdesignComplexity = [
-  { activityName: 'Process request', complexity: 1 },
+  { activityName: 'Process request', complexity: 7 },
   { activityName: 'Receive information about projection', complexity: 4 },
   { activityName: 'Fetch snapshot', complexity: 4 },
   { activityName: 'Fetch events', complexity: 4 },
   { activityName: `Build projection`, complexity: 24 },
-  { activityName: 'Update the DB', complexity: 4 }
+  { activityName: 'Update the DB', complexity: 10 }
 ]
 
 export const mCQRSrealizationComplexity = [

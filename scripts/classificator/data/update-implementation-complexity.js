@@ -1,21 +1,21 @@
 export const mCQRSdesignComplexity = [
-  { activityName: 'Create command', complexity: 2 },
+  { activityName: 'Create command', complexity: 6 },
   { activityName: 'Validate command', complexity: 4 },
   { activityName: 'Route command', complexity: 1 },
-  { activityName: 'Fetch aggregate', complexity: 10 },
+  { activityName: 'Fetch aggregate', complexity: 14 },
   { activityName: `Update aggregate’s state`, complexity: 6 },
-  { activityName: 'Save aggregate', complexity: 10 },
-  { activityName: 'Dispatch events', complexity: 2 }
+  { activityName: 'Save aggregate', complexity: 18 },
+  { activityName: 'Dispatch events', complexity: 4 }
 ]
 
 export const classicalCQRSdesignComplexity = [
-  { activityName: 'Create command', complexity: 2 },
+  { activityName: 'Create command', complexity: 6 },
   { activityName: 'Validate command', complexity: 4 },
   { activityName: 'Route command', complexity: 1 },
-  { activityName: 'Fetch aggregate', complexity: 24 },
+  { activityName: 'Fetch aggregate', complexity: 30 },
   { activityName: `Update aggregate’s state`, complexity: 6 },
-  { activityName: 'Save aggregate', complexity: 16 },
-  { activityName: 'Dispatch events', complexity: 2 }
+  { activityName: 'Save aggregate', complexity: 24 },
+  { activityName: 'Dispatch events', complexity: 4 }
 ]
 
 export const mCQRSrealizationComplexity = [

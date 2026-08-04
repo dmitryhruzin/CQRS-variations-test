@@ -6,7 +6,7 @@ export const mCQRSdesignComplexity = [
 
 export const classicalCQRSdesignComplexity = [
   { activityName: 'Route event', complexity: 1 },
-  { activityName: 'Handle event (Update projection)', complexity: 4 },
+  { activityName: 'Handle event (Update projection)', complexity: 5 },
   { activityName: 'Notify client', complexity: 2 }
 ]
 

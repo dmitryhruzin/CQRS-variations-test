@@ -1,14 +1,14 @@
 export const mCQRSdesignComplexity = [
-  { activityName: 'Create query', complexity: 2 },
+  { activityName: 'Create query', complexity: 6 },
   { activityName: 'Validate query', complexity: 4 },
-  { activityName: 'Fetch projection', complexity: 4 },
+  { activityName: 'Fetch projection', complexity: 8 },
   { activityName: `Map projection to DTO`, complexity: 2 }
 ]
 
 export const classicalCQRSdesignComplexity = [
-  { activityName: 'Create query', complexity: 2 },
+  { activityName: 'Create query', complexity: 6 },
   { activityName: 'Validate query', complexity: 4 },
-  { activityName: 'Fetch projection', complexity: 4 },
+  { activityName: 'Fetch projection', complexity: 8 },
   { activityName: `Map projection to DTO`, complexity: 2 }
 ]
 
