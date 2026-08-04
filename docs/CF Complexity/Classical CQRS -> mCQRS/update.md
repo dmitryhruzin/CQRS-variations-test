@@ -15,8 +15,9 @@ flowchart TD
   F --> G["Define an event type (2)"]:::mod
   G --> H["Apply an event on the Aggregate (1)"]:::mod
   H --"Next Event"--> F
-  H --"All Events are applied"--> I@{ shape: lean-l, label: "Aggregate" }
-  H --> J@{ shape: lean-l, label: "Command" }
+  H --"All Events are applied"--> M["Send Aggregate load metrics (2)"]
+  M --> I@{ shape: lean-l, label: "Aggregate" }
+  M --> J@{ shape: lean-l, label: "Command" }
 ```
 
 ## Fetch the Aggregate (mCQRS)
@@ -29,8 +30,9 @@ flowchart TD
   B --> C["Get Snapshot from SnapshotDB (2)"]
   C --> D["Create new Aggregate instance (1)"]
   D --> E["Map the Snapshot to the Aggregate mCQRS (1)"]:::mod
-  E --> I@{ shape: lean-l, label: "Aggregate" }
-  E --> J@{ shape: lean-l, label: "Command" }
+  E --> M["Send Aggregate load metrics (2)"]
+  M --> I@{ shape: lean-l, label: "Aggregate" }
+  M --> J@{ shape: lean-l, label: "Command" }
 ```
 
 **Input/Output Parameters:** Command, Aggregate (2)
@@ -63,8 +65,10 @@ flowchart TD
   D --> E1["Save Snapshot to the SnapshotDB (2)"]:::mod
   E1 --> E2["Save Events to the Event Store (2)"]
   C --"No"--> E2
-  E2 --> F@{ shape: lean-l, label: "Events" }
-
+  E2 --> CF{"Both writes succeeded (2)"}
+  CF --Yes--> L["Log the persisted Events (2)"]
+  CF --"No"--> X@{ shape: dbl-circ, label: "End" }
+  L --> F@{ shape: lean-l, label: "Events" }
 ```
 
 ## Save Aggregate (mCQRS)
@@ -78,8 +82,11 @@ flowchart TD
   A2 --> B
   B --> C["Save Events to the Event Store (2)"]
   B --> D["Save Aggregate to the SnapshotDB (2)"]:::mod
-  C --> E@{ shape: lean-l, label: "Events" }
-  D --> E
+  C --> CF{"Both writes succeeded (2)"}
+  D --> CF
+  CF --Yes--> L["Log the persisted Events (2)"]
+  CF --"No"--> X@{ shape: dbl-circ, label: "End" }
+  L --> E@{ shape: lean-l, label: "Events" }
 ```
 
 **Input/Output Parameters:** Aggregate, Events (2)

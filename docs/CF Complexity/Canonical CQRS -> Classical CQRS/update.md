@@ -13,8 +13,9 @@ flowchart TD
   E --> F["Define an event type (2)"]
   F --> G["Apply an event on the Aggregate (1)"]
   G --"Next Event"--> E
-  G --"All Events are applied"--> H@{ shape: lean-l, label: "Aggregate" }
-  G --> I@{ shape: lean-l, label: "Command" }
+  G --"All Events are applied"--> M["Send Aggregate load metrics (2)"]
+  M --> H@{ shape: lean-l, label: "Aggregate" }
+  M --> I@{ shape: lean-l, label: "Command" }
 ```
 
 ## Fetch the Aggregate (Classical CQRS)
@@ -32,8 +33,9 @@ flowchart TD
   F --> G["Define an event type (2)"]
   G --> H["Apply an event on the Aggregate (1)"]
   H --"Next Event"--> F
-  H --"All Events are applied"--> I@{ shape: lean-l, label: "Aggregate" }
-  H --> J@{ shape: lean-l, label: "Command" }
+  H --"All Events are applied"--> M["Send Aggregate load metrics (2)"]
+  M --> I@{ shape: lean-l, label: "Aggregate" }
+  M --> J@{ shape: lean-l, label: "Command" }
 ```
 
 **Input/Output Parameters:** Command, Aggregate (2)
@@ -58,7 +60,8 @@ flowchart TD
   A1 --> B["Update cache (1)"]
   A2 --> B
   B --> C["Save Events to the Event Store (2)"]
-  C --> D@{ shape: lean-l, label: "Events" }
+  C --> L["Log the persisted Events (2)"]
+  L --> D@{ shape: lean-l, label: "Events" }
 ```
 
 ## Save Aggregate (Classical CQRS)
@@ -75,7 +78,10 @@ flowchart TD
   D --> E1["Save Snapshot to the SnapshotDB (2)"]:::mod
   E1 --> E2["Save Events to the Event Store (2)"]
   C --"No"--> E2
-  E2 --> F@{ shape: lean-l, label: "Events" }
+  E2 --> CF{"Both writes succeeded (2)"}:::mod
+  CF --Yes--> L["Log the persisted Events (2)"]
+  CF --"No"--> X@{ shape: dbl-circ, label: "End" }
+  L --> F@{ shape: lean-l, label: "Events" }
 ```
 
 **Input/Output Parameters:** Aggregate, Events (2)
@@ -85,12 +91,13 @@ flowchart TD
 | BCS1  | Meet condition to create a Snapshot | branch        | 2      |
 | BCS2  | Create a new Snapshot instance      | sequence      | 1      |
 | BCS3  | Save Snapshot to the SnapshotDB     | function call | 2      |
-| Total |                                     |               | 5      |
+| BCS4  | Both writes succeeded               | branch        | 2      |
+| Total |                                     |               | 7      |
 
-**Migration Complexity:** 2 × 5 = **10**  
+**Migration Complexity:** 2 × 7 = **14**  
 
 ---
 
 ## Total
 
-6 + 10 = 16
+6 + 14 = 20

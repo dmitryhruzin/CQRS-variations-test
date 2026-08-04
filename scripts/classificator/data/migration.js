@@ -2,22 +2,22 @@
 
 export const canonicalToClassicalCQRSDesignComplexity = [
   { activityName: 'create', complexity: 0 },
-  { activityName: 'update', complexity: 16 },
-  { activityName: 'eventual consistency', complexity: 15 },
-  { activityName: 'projection rebuild', complexity: 9 },
+  { activityName: 'update', complexity: 20 },
+  { activityName: 'eventual consistency', complexity: 17 },
+  { activityName: 'projection rebuild', complexity: 11 },
   { activityName: 'read', complexity: 0 }
 ]
 
 export const canonicalToMCQRSDesignComplexity = [
-  { activityName: 'create', complexity: 4 },
-  { activityName: 'update', complexity: 18 },
-  { activityName: 'eventual consistency', complexity: 7 },
-  { activityName: 'projection rebuild', complexity: 20 },
+  { activityName: 'create', complexity: 8 },
+  { activityName: 'update', complexity: 22 },
+  { activityName: 'eventual consistency', complexity: 9 },
+  { activityName: 'projection rebuild', complexity: 22 },
   { activityName: 'read', complexity: 0 }
 ]
 
 export const classicalToMCQRSDesignComplexity = [
-  { activityName: 'create', complexity: 4 },
+  { activityName: 'create', complexity: 8 },
   { activityName: 'update', complexity: 22 },
   { activityName: 'eventual consistency', complexity: 9 },
   { activityName: 'projection rebuild', complexity: 20 },
@@ -25,7 +25,7 @@ export const classicalToMCQRSDesignComplexity = [
 ]
 
 export const mCQRSToClassicalCQRSDesignComplexity = [
-  { activityName: 'create', complexity: 2 },
+  { activityName: 'create', complexity: 4 },
   { activityName: 'update', complexity: 32 },
   { activityName: 'eventual consistency', complexity: 13 },
   { activityName: 'projection rebuild', complexity: 33 },

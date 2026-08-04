@@ -11,15 +11,18 @@ flowchart TD
   C --> D["Apply the event to the Projection (1)"]
   D --> E{"Version mismatch Error (2)"}
   E --"No"--> F["Save the Projection to Projection DB (2)"]
-  E --Yes--> H["Get Projection Snapshot from the SnapshotDB (2)"]:::mod
+  E --Yes--> LG["Log the Projection version mismatch (2)"]
+  LG --> H["Get Projection Snapshot from the SnapshotDB (2)"]:::mod
   H --> I["Get Events from the Event Store (2)"]:::mod
   I --> J["Create new Projection instance based on Snapshot Data (1)"]:::mod
   J --> K1{{"For each event in Events (3)"}}:::mod
   K1 --> K2["Determine event type (2)"]:::mod
   K2 --> K3["Replay event onto Projection (1)"]:::mod
   K3 --"Next event"--> K1
-  K3 --"All events are replayed" --> F
-  F --> M@{ shape: lean-l, label: "Event" }
+  K3 --"All events are replayed"--> F
+  F --> CP["Commit the Event processing position (2)"]
+  CP --> MT["Send the Projection lag metric (2)"]
+  MT --> M@{ shape: lean-l, label: "Event" }
 ```
 
 ## Handle Event - Update Projection (mCQRS)
@@ -33,10 +36,13 @@ flowchart TD
   C --> D["Apply the event to the Projection (1)"]
   D --> E{"Version mismatch Error (2)"}
   E --"No"--> F["Save the Projection to Projection DB (2)"]
-  E --Yes--> H["Get Snapshot from the SnapshotDB (2)"]:::mod
+  E --Yes--> LG["Log the Projection version mismatch (2)"]
+  LG --> H["Get Snapshot from the SnapshotDB (2)"]:::mod
   H --> L["Map Snapshot to Projection (1)"]:::mod
   L --> F
-  F --> M@{ shape: lean-l, label: "Event" }
+  F --> CP["Commit the Event processing position (2)"]
+  CP --> MT["Send the Projection lag metric (2)"]
+  MT --> M@{ shape: lean-l, label: "Event" }
 ```
 
 **Input/Output Parameters:** Event (1)

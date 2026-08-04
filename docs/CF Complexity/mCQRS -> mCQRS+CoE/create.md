@@ -4,10 +4,11 @@
 
 ```mermaid
 flowchart TD
-  classDef mod stroke:#0f0
+  classDef mod stroke:#f00
   A@{ shape: lean-l, label: "Events" }
   A --> B["Send Events to the Event Bus (2)"]
-  B --> D@{ shape: lean-l, label: "Events" }
+  B --> M["Send Command processing metrics (2)"]
+  M --> D@{ shape: lean-l, label: "Events" }
 ```
 
 **Input/Output Parameters:** Events (1)
@@ -20,15 +21,16 @@ flowchart TD
   A@{ shape: lean-l, label: "Events" }
   A --> B["Create a Group of Events (1)"]:::mod
   B --> C["Send the Group to the Event Bus (2)"]
-  C --> D@{ shape: lean-l, label: "Group of Events" }
+  C --> M["Send Command processing metrics (2)"]
+  M --> D@{ shape: lean-l, label: "Group of Events" }
 ```
 
 **Input/Output Parameters:** Events, Group of Events (2)
 
-| ID    | Name                         | Type          | Weight |
-|-------|------------------------------|---------------|--------|
-| BCS1  | Create a Group of Events     | sequence      | 1      |
-| Total |                              |               | 1      |
+| ID    | Name                     | Type     | Weight |
+|-------|--------------------------|----------|--------|
+| BCS1  | Create a Group of Events | sequence | 1      |
+| Total |                          |          | 1      |
 
 **Migration Complexity:** 2 × 1 = **2**
 

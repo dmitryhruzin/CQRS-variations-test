@@ -9,7 +9,9 @@ flowchart TD
   A --> B["Take the Projection from ProjectionDB (2)"]
   B --> C["Apply the event to the Projection (1)"]
   C --> D["Save the Projection to Projection DB (2)"]
-  D --> E@{ shape: lean-l, label: "Event" }
+  D --> CP["Commit the Event processing position (2)"]
+  CP --> MT["Send the Projection lag metric (2)"]
+  MT --> E@{ shape: lean-l, label: "Event" }
 ```
 
 ## Handle Event - Update Projection (Classical CQRS)
@@ -23,15 +25,18 @@ flowchart TD
   C --> D["Apply the event to the Projection (1)"]
   D --> E{"Version mismatch Error (2)"}:::mod
   E --"No"--> F["Save the Projection to Projection DB (2)"]
-  E --Yes--> H["Get Projection Snapshot from the SnapshotDB (2)"]:::mod
+  E --Yes--> LG["Log the Projection version mismatch (2)"]:::mod
+  LG --> H["Get Projection Snapshot from the SnapshotDB (2)"]:::mod
   H --> I["Get Events from the Event Store (2)"]:::mod
   I --> J["Create new Projection instance based on Snapshot Data (1)"]:::mod
   J --> K1{{"For each event in Events (3)"}}:::mod
   K1 --> K2["Determine event type (2)"]:::mod
   K2 --> K3["Replay event onto Projection (1)"]:::mod
   K3 --"Next event"--> K1
-  K3 --"All events are replayed" --> F
-  F --> M@{ shape: lean-l, label: "Event" }
+  K3 --"All events are replayed"--> F
+  F --> CP["Commit the Event processing position (2)"]
+  CP --> MT["Send the Projection lag metric (2)"]
+  MT --> M@{ shape: lean-l, label: "Event" }
 ```
 
 **Input/Output Parameters:** Event (1)
@@ -40,18 +45,19 @@ flowchart TD
 |-------|-------------------------------------------------------|---------------|--------|
 | BCS1  | Determine event version                               | branch        | 2      |
 | BCS2  | Version mismatch Error                                | branch        | 2      |
-| BCS3  | Get Projection Snapshot from the SnapshotDB           | function call | 2      |
-| BCS4  | Get Events from the Event Store                       | function call | 2      |
-| BCS5  | Create new Projection instance based on Snapshot Data | sequence      | 1      |
-| BCS6  | For each event in Events                              | iteration     | 3      |
-| BCS7  | Determine event type                                  | branch        | 2      |
-| BCS8  | Replay event onto Projection                          | sequence      | 1      |
-| Total |                                                       |               | 15     |
+| BCS3  | Log the Projection version mismatch                   | function call | 2      |
+| BCS4  | Get Projection Snapshot from the SnapshotDB           | function call | 2      |
+| BCS5  | Get Events from the Event Store                       | function call | 2      |
+| BCS6  | Create new Projection instance based on Snapshot Data | sequence      | 1      |
+| BCS7  | For each event in Events                              | iteration     | 3      |
+| BCS8  | Determine event type                                  | branch        | 2      |
+| BCS9  | Replay event onto Projection                          | sequence      | 1      |
+| Total |                                                       |               | 17     |
 
-**Migration Complexity:** 1 × 15 = **15**  
+**Migration Complexity:** 1 × 17 = **17**  
 
 ---
 
 ## Total
 
-15
+17

@@ -114,7 +114,9 @@ flowchart TD
   classDef mod stroke:#f00
   A@{ shape: lean-l, label: "Projection" }
   A --> B["Save projection to the database (2)"]
-  B --> C@{ shape: dbl-circ, label: "End" }
+  B --> CP["Save the rebuild checkpoint (2)"]
+  CP --> LG["Log the projection rebuild completion (2)"]
+  LG --> C@{ shape: dbl-circ, label: "End" }
 ```
 
 ## Save Projection (mCQRS)
@@ -125,8 +127,12 @@ flowchart TD
   A@{ shape: lean-l, label: "Projection" }
   A --> B["Save projection to the database (2)"]
   A --> C["Save new projection snapshot to the database (2)"]:::mod
-  B --> D@{ shape: dbl-circ, label: "End" }
-  C --> D
+  B --> CF{"Both writes succeeded (2)"}:::mod
+  C --> CF
+  CF --Yes--> CP["Save the rebuild checkpoint (2)"]
+  CP --> LG["Log the projection rebuild completion (2)"]
+  LG --> D@{ shape: dbl-circ, label: "End" }
+  CF --"No"--> D
 ```
 
 **Input/Output Parameters:** Projection (1)
@@ -134,12 +140,13 @@ flowchart TD
 | ID    | Name                                         | Type          | Weight |
 |-------|----------------------------------------------|---------------|--------|
 | BCS1  | Save new projection snapshot to the database | function call | 2      |
-| Total |                                              |               | 2      |
+| BCS2  | Both writes succeeded                        | branch        | 2      |
+| Total |                                              |               | 4      |
 
-**Migration Complexity:** 1 × 2 = **2**  
+**Migration Complexity:** 1 × 4 = **4**  
 
 ---
 
 ## Total
 
-2 + 6 + 2 + 8 + 2 = 20
+2 + 6 + 2 + 8 + 4 = 22
