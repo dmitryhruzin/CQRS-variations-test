@@ -7,17 +7,19 @@ flowchart TD
   classDef mod stroke:#0f0
   A@{ shape: lean-l, label: "Request" }
   A --> B["Create Query (1)"]:::mod
-  B --> C@{ shape: lean-l, label: "Query" }
+  B --> T["Initialize tracing context and correlation ID (2)"]
+  T --> C@{ shape: lean-l, label: "Query" }
 ```
 
 **Input/Output Parameters:** Request, Query (2)
 
-| ID    | Name         | Type     | Weight |
-|-------|--------------|----------|--------|
-| BCS1  | Create Query | sequence | 1      |
-| Total |              |          | 1      |
+| ID    | Name                                          | Type          | Weight |
+|-------|-----------------------------------------------|---------------|--------|
+| BCS1  | Create Query                                  | sequence      | 1      |
+| BCS2  | Initialize tracing context and correlation ID | function call | 2      |
+| Total |                                               |               | 3      |
 
-**Implementation Complexity:** 2 × 1 = **2**  
+**Implementation Complexity:** 2 × 3 = **6**  
 **Modification Complexity:** 2 × 1 = **2**
 
 ---
@@ -54,17 +56,19 @@ flowchart TD
   classDef mod stroke:#0f0
   A@{ shape: lean-l, label: "Query" }
   A --> B["Get projection from DB (2)"]:::mod
-  B --> C@{ shape: lean-l, label: "Projection" }
+  B --> M["Send Query execution metrics (2)"]
+  M --> C@{ shape: lean-l, label: "Projection" }
 ```
 
 **Input/Output Parameters:** Query, Projection (2)
 
-| ID    | Name                    | Type          | Weight |
-|-------|-------------------------|---------------|--------|
-| BCS1  | Get projection from DB  | function call | 2      |
-| Total |                         |               | 2      |
+| ID    | Name                         | Type          | Weight |
+|-------|------------------------------|---------------|--------|
+| BCS1  | Get projection from DB       | function call | 2      |
+| BCS2  | Send Query execution metrics | function call | 2      |
+| Total |                              |               | 4      |
 
-**Implementation Complexity:** 2 × 2 = **4**  
+**Implementation Complexity:** 2 × 4 = **8**  
 **Modification Complexity:** 2 × 2 = **4**
 
 ---
@@ -81,10 +85,10 @@ flowchart TD
 
 **Input/Output Parameters:** Projection, DTO (2)
 
-| ID    | Name                                | Type     | Weight |
-|-------|-------------------------------------|----------|--------|
-| BCS1  | Create DTO using projection's data  | sequence | 1      |
-| Total |                                     |          | 1      |
+| ID    | Name                               | Type     | Weight |
+|-------|------------------------------------|----------|--------|
+| BCS1  | Create DTO using projection's data | sequence | 1      |
+| Total |                                    |          | 1      |
 
 **Implementation Complexity:** 2 × 1 = **2**  
 **Modification Complexity:** 2 × 1 = **2**

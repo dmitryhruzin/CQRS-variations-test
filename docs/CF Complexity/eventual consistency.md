@@ -7,17 +7,19 @@ flowchart TD
   classDef mod stroke:#0f0
   A@{ shape: lean-l, label: "Event" }
   A --> B["Registration of the Event (1)"]
-  B:::mod -->C@{ shape: lean-l, label: "Event" }
+  B:::mod --> T["Restore tracing context from the Event metadata (2)"]
+  T --> C@{ shape: lean-l, label: "Event" }
 ```
 
 **Input/Output Parameters:** Event (1)
 
-| ID    | Name                      | Type     | Weight |
-|-------|---------------------------|----------|--------|
-| BCS1  | Registration of the Event | sequence | 1      |
-| Total |                           |          | 1      |
+| ID    | Name                                            | Type          | Weight |
+|-------|-------------------------------------------------|---------------|--------|
+| BCS1  | Registration of the Event                       | sequence      | 1      |
+| BCS2  | Restore tracing context from the Event metadata | function call | 2      |
+| Total |                                                 |               | 3      |
 
-**Implementation Complexity:** 1 × 1 = **1**  
+**Implementation Complexity:** 1 × 3 = **3**  
 **Modification Complexity:** 1 × 1 = **1**
 
 ---
@@ -33,7 +35,8 @@ flowchart TD
   C --> D["Apply the event to the Projection (1)"]:::mod
   D --> E{"Version mismatch Error (2)"}
   E --"No"--> F["Save the Projection to Projection DB (2)"]
-  E --Yes--> H["Get Projection Snapshot from the SnapshotDB (2)"]
+  E --Yes--> LG["Log the Projection version mismatch (2)"]
+  LG --> H["Get Projection Snapshot from the SnapshotDB (2)"]
   H --> I["Get Events from the Event Store (2)"]
   I --> J["Create new Projection instance based on Snapshot Data (1)"]:::mod
   J --> K1{{"For each event in Events (3)"}}
@@ -41,7 +44,9 @@ flowchart TD
   K2 --> K3["Replay event onto Projection (1)"]:::mod
   K3 --"Next event"--> K1
   K3 --"All events are replayed"--> F
-  F --> M@{ shape: lean-l, label: "Event" }
+  F --> CP["Commit the Event processing position (2)"]
+  CP --> MT["Send the Projection lag metric (2)"]
+  MT --> M@{ shape: lean-l, label: "Event" }
 ```
 
 **Input/Output Parameters:** Event (1)
@@ -52,16 +57,19 @@ flowchart TD
 | BCS2  | Determine event version                               | branch        | 2      |
 | BCS3  | Apply the event to the Projection                     | sequence      | 1      |
 | BCS4  | Version mismatch Error                                | branch        | 2      |
-| BCS5  | Save the Projection to Projection DB                  | function call | 2      |
+| BCS5  | Log the Projection version mismatch                   | function call | 2      |
 | BCS6  | Get Projection Snapshot from the SnapshotDB           | function call | 2      |
 | BCS7  | Get Events from the Event Store                       | function call | 2      |
 | BCS8  | Create new Projection instance based on Snapshot Data | sequence      | 1      |
 | BCS9  | For each event in Events                              | iteration     | 3      |
 | BCS10 | Determine event type                                  | branch        | 2      |
 | BCS11 | Replay event onto Projection                          | sequence      | 1      |
-| Total |                                                       |               | 20     |
+| BCS12 | Save the Projection to Projection DB                  | function call | 2      |
+| BCS13 | Commit the Event processing position                  | function call | 2      |
+| BCS14 | Send the Projection lag metric                        | function call | 2      |
+| Total |                                                       |               | 26     |
 
-**Implementation Complexity:** 1 × 20 = **20**  
+**Implementation Complexity:** 1 × 26 = **26**  
 **Modification Complexity:** 1 × 5 = **5**
 
 ---
@@ -77,10 +85,13 @@ flowchart TD
   C --> D["Apply the event to the Projection (1)"]:::mod
   D --> E{"Version mismatch Error (2)"}
   E --"No"--> F["Save the Projection to Projection DB (2)"]
-  E --Yes--> H["Get Snapshot from the SnapshotDB (2)"]
+  E --Yes--> LG["Log the Projection version mismatch (2)"]
+  LG --> H["Get Snapshot from the SnapshotDB (2)"]
   H --> L["Map Snapshot to Projection (1)"]:::mod
   L --> F
-  F --> M@{ shape: lean-l, label: "Event" }
+  F --> CP["Commit the Event processing position (2)"]
+  CP --> MT["Send the Projection lag metric (2)"]
+  MT --> M@{ shape: lean-l, label: "Event" }
 ```
 
 **Input/Output Parameters:** Event (1)
@@ -91,12 +102,15 @@ flowchart TD
 | BCS2  | Determine event version               | branch        | 2      |
 | BCS3  | Apply the event to the Projection     | sequence      | 1      |
 | BCS4  | Version mismatch Error                | branch        | 2      |
-| BCS5  | Save the Projection to Projection DB  | function call | 2      |
+| BCS5  | Log the Projection version mismatch   | function call | 2      |
 | BCS6  | Get Snapshot from the SnapshotDB      | function call | 2      |
 | BCS7  | Map Snapshot to Projection            | sequence      | 1      |
-| Total |                                       |               | 12     |
+| BCS8  | Save the Projection to Projection DB  | function call | 2      |
+| BCS9  | Commit the Event processing position  | function call | 2      |
+| BCS10 | Send the Projection lag metric        | function call | 2      |
+| Total |                                       |               | 18     |
 
-**Implementation Complexity:** 1 × 12 = **12**  
+**Implementation Complexity:** 1 × 18 = **18**  
 **Modification Complexity:** 1 × 4 = **4**
 
 ---
@@ -114,11 +128,11 @@ flowchart TD
 
 **Input/Output Parameters:** Event (1)
 
-| ID    | Name                           | Type          | Weight |
-|-------|--------------------------------|---------------|--------|
-| BCS1  | Get list of clients to notify  | function call | 2      |
-| BCS2  | Send notification              | function call | 2      |
-| Total |                                |               | 4      |
+| ID    | Name                          | Type          | Weight |
+|-------|-------------------------------|---------------|--------|
+| BCS1  | Get list of clients to notify | function call | 2      |
+| BCS2  | Send notification             | function call | 2      |
+| Total |                               |               | 4      |
 
 **Implementation Complexity:** 1 × 4 = **4**  
 **Modification Complexity:** 1 × 2 = **2**

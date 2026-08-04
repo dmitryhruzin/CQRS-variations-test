@@ -7,17 +7,19 @@ flowchart TD
   classDef mod stroke:#0f0
   A@{ shape: lean-l, label: "Request" }
   A --> B["Create new Command instance (1)"]
-  B:::mod -->C@{ shape: lean-l, label: "Command" }
+  B:::mod --> T["Initialize tracing context and correlation ID (2)"]
+  T --> C@{ shape: lean-l, label: "Command" }
 ```
 
 **Input/Output Parameters:** Request, Command (2)
 
-| ID    | Name                        | Type     | Weight |
-|-------|-----------------------------|----------|--------|
-| BCS1  | Create new Command instance | sequence | 1      |
-| Total |                             |          | 1      |
+| ID    | Name                                          | Type          | Weight |
+|-------|-----------------------------------------------|---------------|--------|
+| BCS1  | Create new Command instance                   | sequence      | 1      |
+| BCS2  | Initialize tracing context and correlation ID | function call | 2      |
+| Total |                                               |               | 3      |
 
-**Implementation Complexity:** 2 × 1 = **2**  
+**Implementation Complexity:** 2 × 3 = **6**  
 **Modification Complexity:** 2 × 1 = **2**
 
 ---
@@ -102,7 +104,8 @@ flowchart TD
   A1 --> B["Update cache (1)"]
   A2 --> B
   B --> C["Save Events to the Event Store (2)"]
-  C --> D@{ shape: lean-l, label: "Events" }
+  C --> L["Log the persisted Events (2)"]
+  L --> D@{ shape: lean-l, label: "Events" }
 ```
 
 **Input/Output Parameters:** Aggregate, Events (2)
@@ -111,9 +114,10 @@ flowchart TD
 |-------|--------------------------------|---------------|--------|
 | BCS1  | Update cache                   | sequence      | 1      |
 | BCS2  | Save Events to the Event Store | function call | 2      |
-| Total |                                |               | 3      |
+| BCS3  | Log the persisted Events       | function call | 2      |
+| Total |                                |               | 5      |
 
-**Implementation Complexity:** 2 × 3 = **6**  
+**Implementation Complexity:** 2 × 5 = **10**  
 **Modification Complexity:** 2 × 0 = **0**
 
 ---
@@ -129,8 +133,9 @@ flowchart TD
   A2 --> B
   B --> C["Save Events to the Event Store (2)"]
   B --> D["Save Aggregate to the SnapshotDB (2)"]
-  C --> E@{ shape: lean-l, label: "Events" }
-  D --> E
+  C --> L["Log the persisted Events (2)"]
+  D --> L
+  L --> E@{ shape: lean-l, label: "Events" }
 ```
 
 **Input/Output Parameters:** Aggregate, Events (2)
@@ -140,9 +145,10 @@ flowchart TD
 | BCS1  | Update cache                     | sequence      | 1      |
 | BCS2  | Save Events to the Event Store   | function call | 2      |
 | BCS3  | Save Aggregate to the SnapshotDB | function call | 2      |
-| Total |                                  |               | 5      |
+| BCS4  | Log the persisted Events         | function call | 2      |
+| Total |                                  |               | 7      |
 
-**Implementation Complexity:** 2 × 5 = **10**  
+**Implementation Complexity:** 2 × 7 = **14**  
 **Modification Complexity:** 2 × 0 = **0**
 
 ---
@@ -154,15 +160,17 @@ flowchart TD
   classDef mod stroke:#0f0
   A@{ shape: lean-l, label: "Events" }
   A --> B["Send Events to the Event Bus (2)"]
-  B --> D@{ shape: lean-l, label: "Events" }
+  B --> M["Send Command processing metrics (2)"]
+  M --> D@{ shape: lean-l, label: "Events" }
 ```
 
 **Input/Output Parameters:** Events (1)
 
-| ID    | Name                         | Type          | Weight |
-|-------|------------------------------|---------------|--------|
-| BCS1  | Send Events to the Event Bus | function call | 2      |
-| Total |                              |               | 2      |
+| ID    | Name                            | Type          | Weight |
+|-------|---------------------------------|---------------|--------|
+| BCS1  | Send Events to the Event Bus    | function call | 2      |
+| BCS2  | Send Command processing metrics | function call | 2      |
+| Total |                                 |               | 4      |
 
-**Implementation Complexity:** 1 × 2 = **2**  
+**Implementation Complexity:** 1 × 4 = **4**  
 **Modification Complexity:** 1 × 0 = **0**

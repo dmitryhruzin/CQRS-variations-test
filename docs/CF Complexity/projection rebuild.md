@@ -6,18 +6,25 @@
 flowchart TD
   classDef mod stroke:#0f0
   A@{ shape: lean-l, label: "Request" }
-  A --> B["Trigger appropriate projection rebuild process (1)"]:::mod
+  A --> CH["Check availability of the Event Store, SnapshotDB and ProjectionDB (2)"]
+  CH --> Q{"Dependencies are available (2)"}
+  Q --Yes--> B["Trigger appropriate projection rebuild process (1)"]:::mod
+  Q --"No"--> LG["Log the unavailable dependencies (2)"]
+  LG --> X@{ shape: dbl-circ, label: "End" }
   B --> D@{ shape: lean-l, label: "Request" }
 ```
 
 **Input/Output Parameters:** Request (1)
 
-| ID    | Name                                           | Type     | Weight |
-|-------|------------------------------------------------|----------|--------|
-| BCS1  | Trigger appropriate projection rebuild process | sequence | 1      |
-| Total |                                                |          | 1      |
+| ID    | Name                                                               | Type          | Weight |
+|-------|--------------------------------------------------------------------|---------------|--------|
+| BCS1  | Check availability of the Event Store, SnapshotDB and ProjectionDB | function call | 2      |
+| BCS2  | Dependencies are available                                         | branch        | 2      |
+| BCS3  | Trigger appropriate projection rebuild process                     | sequence      | 1      |
+| BCS4  | Log the unavailable dependencies                                   | function call | 2      |
+| Total |                                                                    |               | 7      |
 
-**Implementation Complexity:** 1 × 1 = **1**  
+**Implementation Complexity:** 1 × 7 = **7**  
 **Modification Complexity:** 1 × 1 = **1**
 
 ---
@@ -104,10 +111,10 @@ flowchart TD
 
 **Input/Output Parameters:** Projection Metadata, Events (2)
 
-| ID    | Name                                | Type          | Weight |
-|-------|-------------------------------------|---------------|--------|
-| BCS1  | Fetch Events from the Event Store   | function call | 2      |
-| Total |                                     |               | 2      |
+| ID    | Name                              | Type          | Weight |
+|-------|-----------------------------------|---------------|--------|
+| BCS1  | Fetch Events from the Event Store | function call | 2      |
+| Total |                                   |               | 2      |
 
 **Implementation Complexity:** 2 × 2 = **4**  
 **Modification Complexity:** 2 × 0 = **0**
@@ -179,8 +186,10 @@ flowchart TD
   A@{ shape: lean-l, label: "Projection" }
   A --> B["Save projection to the database (2)"]
   A --> C["Save new projection snapshot to the database (2)"]
-  B --> D@{ shape: dbl-circ, label: "End" }
-  C --> D
+  B --> CP["Save the rebuild checkpoint (2)"]
+  C --> CP
+  CP --> LG["Log the projection rebuild completion (2)"]
+  LG --> D@{ shape: dbl-circ, label: "End" }
 ```
 
 **Input/Output Parameters:** Projection (1)
@@ -189,7 +198,9 @@ flowchart TD
 |-------|----------------------------------------------|---------------|--------|
 | BCS1  | Save projection to the database              | function call | 2      |
 | BCS2  | Save new projection snapshot to the database | function call | 2      |
-| Total |                                              |               | 4      |
+| BCS3  | Save the rebuild checkpoint                  | function call | 2      |
+| BCS4  | Log the projection rebuild completion        | function call | 2      |
+| Total |                                              |               | 8      |
 
-**Implementation Complexity:** 1 × 4 = **4**  
+**Implementation Complexity:** 1 × 8 = **8**  
 **Modification Complexity:** 1 × 0 = **0**

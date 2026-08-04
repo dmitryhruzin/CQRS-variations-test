@@ -7,17 +7,19 @@ flowchart TD
   classDef mod stroke:#0f0
   A@{ shape: lean-l, label: "Request" }
   A --> B["Create new Command instance (1)"]
-  B:::mod -->C@{ shape: lean-l, label: "Command" }
+  B:::mod --> T["Initialize tracing context and correlation ID (2)"]
+  T --> C@{ shape: lean-l, label: "Command" }
 ```
 
 **Input/Output Parameters:** Request, Command (2)
 
-| ID    | Name                        | Type     | Weight |
-|-------|-----------------------------|----------|--------|
-| BCS1  | Create new Command instance | sequence | 1      |
-| Total |                             |          | 1      |
+| ID    | Name                                          | Type          | Weight |
+|-------|-----------------------------------------------|---------------|--------|
+| BCS1  | Create new Command instance                   | sequence      | 1      |
+| BCS2  | Initialize tracing context and correlation ID | function call | 2      |
+| Total |                                               |               | 3      |
 
-**Implementation Complexity:** 2 × 1 = **2**  
+**Implementation Complexity:** 2 × 3 = **6**  
 **Modification Complexity:** 2 × 1 = **2**
 
 ---
@@ -84,8 +86,9 @@ flowchart TD
   F --> G["Define an event type (2)"]
   G:::mod --> H["Apply an event on the Aggregate (1)"]
   H --"Next Event"--> F
-  H:::mod --"All Events are applied"--> I@{ shape: lean-l, label: "Aggregate" }
-  H --> J@{ shape: lean-l, label: "Command" }
+  H:::mod --"All Events are applied"--> M["Send Aggregate load metrics (2)"]
+  M --> I@{ shape: lean-l, label: "Aggregate" }
+  M --> J@{ shape: lean-l, label: "Command" }
 ```
 
 **Input/Output Parameters:** Command, Aggregate (2)
@@ -100,9 +103,10 @@ flowchart TD
 | BCS6  | For each event in Events                         | iteration     | 3      |
 | BCS7  | Define an event type                             | branch        | 2      |
 | BCS8  | Apply an event on the Aggregate                  | sequence      | 1      |
-| Total |                                                  |               | 13     |
+| BCS9  | Send Aggregate load metrics                      | function call | 2      |
+| Total |                                                  |               | 15     |
 
-**Implementation Complexity:** 2 × 13 = **26**  
+**Implementation Complexity:** 2 × 15 = **30**  
 **Modification Complexity:** 2 × 5 = **10**
 
 ---
@@ -117,8 +121,9 @@ flowchart TD
   B --> C["Get Snapshot from SnapshotDB (2)"]
   C --> D["Create new Aggregate instance (1)"]
   D:::mod --> E["Map the Snapshot to the Aggregate mCQRS (1)"]
-  E:::mod --> I@{ shape: lean-l, label: "Aggregate" }
-  E --> J@{ shape: lean-l, label: "Command" }
+  E:::mod --> M["Send Aggregate load metrics (2)"]
+  M --> I@{ shape: lean-l, label: "Aggregate" }
+  M --> J@{ shape: lean-l, label: "Command" }
 ```
 
 **Input/Output Parameters:** Command, Aggregate (2)
@@ -129,9 +134,10 @@ flowchart TD
 | BCS2  | Get Snapshot from SnapshotDB            | function call | 2      |
 | BCS3  | Create new Aggregate instance           | sequence      | 1      |
 | BCS4  | Map the Snapshot to the Aggregate mCQRS | sequence      | 1      |
-| Total |                                         |               | 5      |
+| BCS5  | Send Aggregate load metrics             | function call | 2      |
+| Total |                                         |               | 7      |
 
-**Implementation Complexity:** 2 × 5 = **10**  
+**Implementation Complexity:** 2 × 7 = **14**  
 **Modification Complexity:** 2 × 2 = **4**
 
 ---
@@ -152,11 +158,11 @@ flowchart TD
 
 **Input/Output Parameters:** Aggregate, Command, Events (3)
 
-| ID    | Name                                                                      | Type     | Weight |
-|-------|---------------------------------------------------------------------------|----------|--------|
-| BCS1  | Changes to the Aggregate's state according to the Command's instructions  | sequence | 1      |
-| BCS2  | Generate Events                                                           | sequence | 1      |
-| Total |                                                                           |          | 2      |
+| ID    | Name                                                                     | Type     | Weight |
+|-------|--------------------------------------------------------------------------|----------|--------|
+| BCS1  | Changes to the Aggregate's state according to the Command's instructions | sequence | 1      |
+| BCS2  | Generate Events                                                          | sequence | 1      |
+| Total |                                                                          |          | 2      |
 
 **Implementation Complexity:** 3 × 2 = **6**  
 **Modification Complexity:** 3 × 2 = **6**
@@ -177,7 +183,8 @@ flowchart TD
   D --> E1["Save Snapshot to the SnapshotDB (2)"]
   E1 --> E2["Save Events to the Event Store (2)"]
   C --"No"--> E2
-  E2 --> F@{ shape: lean-l, label: "Events" }
+  E2 --> L["Log the persisted Events (2)"]
+  L --> F@{ shape: lean-l, label: "Events" }
 
 ```
 
@@ -190,9 +197,10 @@ flowchart TD
 | BCS3  | Create a new Snapshot instance      | sequence      | 1      |
 | BCS4  | Save Events to the Event Store      | function call | 2      |
 | BCS5  | Save Snapshot to the SnapshotDB     | function call | 2      |
-| Total |                                     |               | 8      |
+| BCS6  | Log the persisted Events            | function call | 2      |
+| Total |                                     |               | 10     |
 
-**Implementation Complexity:** 2 × 8 = **16**  
+**Implementation Complexity:** 2 × 10 = **20**  
 **Modification Complexity:** 2 × 3 = **6**
 
 ---
@@ -208,8 +216,9 @@ flowchart TD
   A2 --> B
   B --> C["Save Events to the Event Store (2)"]
   B --> D["Save Aggregate to the SnapshotDB (2)"]
-  C --> E@{ shape: lean-l, label: "Events" }
-  D --> E
+  C --> L["Log the persisted Events (2)"]
+  D --> L
+  L --> E@{ shape: lean-l, label: "Events" }
 ```
 
 **Input/Output Parameters:** Aggregate, Events (2)
@@ -219,9 +228,10 @@ flowchart TD
 | BCS1  | Update cache                     | sequence      | 1      |
 | BCS2  | Save Events to the Event Store   | function call | 2      |
 | BCS3  | Save Aggregate to the SnapshotDB | function call | 2      |
-| Total |                                  |               | 5      |
+| BCS4  | Log the persisted Events         | function call | 2      |
+| Total |                                  |               | 7      |
 
-**Implementation Complexity:** 2 × 5 = **10**  
+**Implementation Complexity:** 2 × 7 = **14**  
 **Modification Complexity:** 2 × 0 = **0**
 
 ---
@@ -233,15 +243,17 @@ flowchart TD
   classDef mod stroke:#0f0
   A@{ shape: lean-l, label: "Events" }
   A --> B["Send Events to the Event Bus (2)"]
-  B --> D@{ shape: lean-l, label: "Events" }
+  B --> M["Send Command processing metrics (2)"]
+  M --> D@{ shape: lean-l, label: "Events" }
 ```
 
 **Input/Output Parameters:** Events (1)
 
-| ID    | Name                         | Type          | Weight |
-|-------|------------------------------|---------------|--------|
-| BCS1  | Send Events to the Event Bus | function call | 2      |
-| Total |                              |               | 2      |
+| ID    | Name                            | Type          | Weight |
+|-------|---------------------------------|---------------|--------|
+| BCS1  | Send Events to the Event Bus    | function call | 2      |
+| BCS2  | Send Command processing metrics | function call | 2      |
+| Total |                                 |               | 4      |
 
-**Implementation Complexity:** 1 × 2 = **2**  
+**Implementation Complexity:** 1 × 4 = **4**  
 **Modification Complexity:** 1 × 0 = **0**
